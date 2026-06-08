@@ -1,4 +1,4 @@
-# ⚡ VoltiQ — Plataforma de IA aplicada a educación e industria
+# CircuitProIA — Plataforma de IA aplicada a educación e industria
 
 Prototipo funcional en **Streamlit** para presentación de pitch. Integra tres módulos
 de negocio en una sola plataforma con navegación multipágina.
