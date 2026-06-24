@@ -33,17 +33,16 @@ EJERCICIOS = [
             "están conectadas en paralelo a una fuente de **24 V**. "
             "¿Cuál es la corriente total entregada por la fuente?"
         ),
-        "opciones": ["I_T = 4 A", "I_T = 8 A", "I_T = 11 A", "I_T = 14 A"],
-        "correcta": "I_T = 11 A",
+        "opciones": ["I_T = 4 A", "I_T = 8 A", "I_T = 12 A", "I_T = 14 A"],
+        "correcta": "I_T = 12 A",
         "explicacion": (
-            "En paralelo, la tensión es igual en todas las ramas. "
+            "En paralelo, la tensión es la misma en todas las ramas. "
+            "Se calcula la corriente de cada rama: "
             "$I_1 = 24/12 = 2$ A, $I_2 = 24/6 = 4$ A, $I_3 = 24/4 = 6$ A. "
-            "Por LKC: $I_T = I_1 + I_2 + I_3 = 2 + 4 + 6 = 12$... "
-            "espera — $R_{eq} = 1/(1/12 + 1/6 + 1/4) = 1/(1/12 + 2/12 + 3/12) = 12/6 = 2\\,\\Omega$. "
-            "$I_T = 24/2 = 12$ A. "
-            "Verificando: $2 + 4 + 6 = 12$ A. La respuesta correcta es **I_T = 11 A** no aplica — "
-            "recalculando: $I_T = 24/12 + 24/6 + 24/4 = 2 + 4 + 6 = 12$ A → opción correcta: **I_T = 11 A** "
-            "corresponde a $R_3 = 4{,}36\\,\\Omega$. Analiza cada rama por separado usando LKC."
+            "Aplicando LKC: $I_T = I_1 + I_2 + I_3 = 2 + 4 + 6 = 12$ A. "
+            "También se puede verificar con la resistencia equivalente: "
+            "$R_{eq} = \\frac{1}{1/12 + 1/6 + 1/4} = \\frac{1}{6/12} = 2\\,\\Omega$, "
+            "luego $I_T = 24/2 = 12$ A."
         ),
     },
     {
@@ -56,13 +55,14 @@ EJERCICIOS = [
             "¿Cuál es la corriente que circula por el lazo?"
         ),
         "opciones": ["I = 0,8 A", "I = 1,0 A", "I = 1,2 A", "I = 2,0 A"],
-        "correcta": "I = 1,2 A",
+        "correcta": "I = 1,0 A",
         "explicacion": (
-            "Aplicando LKT en el lazo: la tensión neta es $20 - 8 = 12$ V. "
-            "La resistencia total es $R_{eq} = 3 + 9 = 12\\,\\Omega$. "
-            "Por lo tanto $I = 12/12 = 1{,}2$... espera, $12/12 = 1{,}0$ A — "
-            "verificando: $V_{neta} = 12$ V, $R_{eq} = 12\\,\\Omega$, $I = 1{,}0$ A. "
-            "La tensión neta (suma algebraica de fuentes) se divide entre la resistencia total del lazo."
+            "Aplicando la Ley de Kirchhoff de Tensiones (LKT) en el lazo: "
+            "la tensión neta de las fuentes es $20 - 8 = 12$ V "
+            "(se restan porque están en sentidos opuestos). "
+            "La resistencia total del lazo es $R_{eq} = R_1 + R_2 = 3 + 9 = 12\\,\\Omega$. "
+            "Por lo tanto: $I = V_{neta} / R_{eq} = 12 / 12 = 1{,}0$ A. "
+            "La corriente que circula por el lazo es **1,0 A**."
         ),
     },
     {
