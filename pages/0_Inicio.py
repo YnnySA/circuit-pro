@@ -15,6 +15,8 @@ hero(
         "aplicada de profesionales y agentes tutores personalizados para instituciones. "
         "Todo con inteligencia artificial entrenada en conocimiento técnico real."
     ),
+    icon_size=120,
+    icon_position="left",
 )
 
 st.write("")

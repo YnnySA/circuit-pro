@@ -89,13 +89,36 @@ def sidebar_brand():
     st.sidebar.markdown("---")
 
 
-def hero(pill: str, title: str, subtitle: str):
+def hero(pill: str, title: str, subtitle: str,
+         icon_size: int = 130,
+         icon_position: str = "left"):   # "right" | "left" | "top"
+    """Hero con ícono. 
+    icon_size: tamaño en px del logo (defecto 90).
+    icon_position: 'right' coloca el logo a la derecha del texto,
+                   'left' a la izquierda, 'top' encima del texto.
+    """
+    logo = _logo_b64()   # reutiliza la función que ya existe en ui.py
+
+    # Layout: "row" para left/right, "column" para top
+    flex_dir = "column" if icon_position == "top" else "row"
+    img_order = "0" if icon_position == "left" or icon_position == "top" else "1"
+    text_order = "1" if icon_position == "left" or icon_position == "top" else "0"
+    align = "center" if icon_position == "top" else "flex-start"
+
     st.markdown(
         f"""
-        <div class='vq-hero'>
-            <span class='pill'>{pill}</span>
-            <h1>{title}</h1>
-            <p>{subtitle}</p>
+        <div class='vq-hero' style='display:flex; flex-direction:{flex_dir};
+             align-items:{align}; gap:1.8rem;'>
+            <img src='data:image/png;base64,{logo}'
+                 style='order:{img_order}; width:{icon_size}px; height:{icon_size}px;
+                        object-fit:contain; flex-shrink:0;
+                        align-self: center;'
+            />
+            <div style='order:{text_order};'>
+                <span class='pill'>{pill}</span>
+                <h1>{title}</h1>
+                <p>{subtitle}</p>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,

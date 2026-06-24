@@ -5,6 +5,7 @@ import streamlit as st
 
 from components.ui import section_header, metric_card, chips, divider
 from data.mock_data import STUDENT_UNITS, QUIZ_OHM, RESISTANCE_OHMS
+from modules.students.unit_1 import teoria, glosario, ejercicios, graficos
 
 section_header(
     "Módulo · Estudiantes",
@@ -29,76 +30,45 @@ with m4:
 divider()
 
 # --- Pestañas del módulo ------------------------------------------------
-tab_guia, tab_ejercicio, tab_grafico = st.tabs(
-    ["📚 Guías de aprendizaje", "🧪 Ejercicio interactivo", "📈 Visualización"]
-)
-
+tab_guia, tab_glosario, tab_ejercicio, tab_grafico = st.tabs([
+    "📚 Guías de aprendizaje",
+    "📖 Glosario",
+    "🧪 Ejercicio interactivo",
+    "📈 Visualización",
+])
 # ---- Tab 1: Guías por unidad ------------------------------------------
 with tab_guia:
-    st.markdown("#### Plan de estudios por unidades")
-    for u in STUDENT_UNITS:
+    for i, u in enumerate(STUDENT_UNITS):
         with st.expander(f"{u['titulo']}  ·  {u['estado']}", expanded=(u["estado"] == "En curso")):
-            st.progress(u["progreso"] / 100, text=f"Avance: {u['progreso']}%")
-            st.caption("Temas de la unidad:")
-            chips(u["temas"], variant="cyan")
+            #st.progress(u["progreso"] / 100, text=f"Avance: {u['progreso']}%")
+
             if u["estado"] == "Bloqueada":
                 st.warning("Completa la unidad anterior para desbloquear este contenido.", icon="🔒")
+
             elif u["estado"] == "Completada":
                 st.success("Unidad completada. ¡Buen trabajo!", icon="✅")
+                if i == 0:                    # ← solo Unidad 1
+                    teoria.render()
 
-# ---- Tab 2: Ejercicio interactivo con feedback ------------------------
+            elif u["estado"] == "En curso":
+                if i == 0:                    # ← solo Unidad 1
+                    teoria.render()
+                else:                         # ← Unidades 2, 3... en construcción
+                    st.info(
+                        "🚧 Contenido en construcción. "
+                        "Esta unidad estará disponible próximamente.",
+                        icon="🔨",
+                    )
+# ---- Tab 2: Glosario ──────────────────────────────────────────────────
+with tab_glosario:
+    glosario.render()
+
+# ---- Tab 3: Ejercicios interactivos --------------------------------------
 with tab_ejercicio:
-    st.markdown("#### Ejercicio: Ley de Ohm en circuito serie")
-    st.markdown(QUIZ_OHM["enunciado"])
-    st.write("")
+    ejercicios.render()
 
-    eleccion = st.radio(
-        "Selecciona tu respuesta:",
-        QUIZ_OHM["opciones"],
-        index=None,
-        key="quiz_ohm_radio",
-    )
-
-    col_a, col_b = st.columns([1, 3])
-    with col_a:
-        verificar = st.button("Verificar respuesta", type="primary", use_container_width=True)
-
-    if verificar:
-        st.session_state.quiz_ohm_answered = True
-
-    if st.session_state.quiz_ohm_answered:
-        if eleccion is None:
-            st.warning("Selecciona una opción antes de verificar.", icon="✋")
-        elif eleccion == QUIZ_OHM["correcta"]:
-            st.success("¡Correcto! " + QUIZ_OHM["explicacion"], icon="🎉")
-            st.balloons()
-        else:
-            st.error(
-                f"No es correcto. Tu respuesta: **{eleccion}**.\n\n"
-                + QUIZ_OHM["explicacion"],
-                icon="❌",
-            )
-
-    st.caption("La retroalimentación es inmediata e incluye el desarrollo paso a paso.")
-
-# ---- Tab 3: Visualización dinámica ------------------------------------
+# ---- Tab 4: Gráficos explicativos --------------------------------------
 with tab_grafico:
-    st.markdown("#### Curva característica V–I de una resistencia")
-    st.caption(
-        "Mueve el control para cambiar la resistencia y observa cómo varía la corriente "
-        "según la Ley de Ohm (I = V / R)."
-    )
-    r = st.slider("Resistencia R (Ω)", min_value=2, max_value=24, value=RESISTANCE_OHMS, step=1)
+    graficos.render()
 
-    voltajes = np.linspace(0, 24, 50)
-    corrientes = voltajes / r
-    df = pd.DataFrame({"Tensión (V)": voltajes, "Corriente (A)": corrientes}).set_index("Tensión (V)")
 
-    st.line_chart(df, height=320, color="#0B5FFF")
-
-    c1, c2 = st.columns(2)
-    with c1:
-        metric_card(f"{r} Ω", "Resistencia seleccionada")
-    with c2:
-        metric_card(f"{24 / r:.2f} A", "Corriente máxima (a 24 V)")
-    st.caption("Gráfico generado en tiempo real para apoyar la comprensión visual del concepto.")
