@@ -15,6 +15,7 @@ Integra tres líneas de negocio en una plataforma única:
 Plataforma interactiva para estudiantes con:
 - **Guías de aprendizaje:** Contenido teórico organizado por unidades (DC, AC, Trifásico, Máquinas)
 - **Ejercicios interactivos:** Banco de ejercicios con evaluación inmediata y retroalimentación detallada
+- **Cuestionarios formativos:** 2 cuestionarios (23 preguntas) con retroalimentación formativa: 2 intentos por pregunta, pista al 1er error, revelación de la respuesta al 2do error, puntaje final por rangos
 - **Glosario técnico:** 15+ términos eléctricos con definiciones, unidades y categorización
 - **Simuladores en tiempo real:** RLC serie, diagramas fasoriales, curvas de Bode
 - **Indicadores de progreso:** Seguimiento de avance global, por unidad, respuestas correctas, rachas
@@ -66,6 +67,7 @@ voltiq/
 │
 ├── data/                           # Datos centralizados
 │   ├── mock_data.py                # Datos simulados para todos los módulos
+│   ├── cuestionarios_data.py       # Preguntas de los cuestionarios formativos (Dr. Maykop Pérez M., UdeC)
 │   └── unidad_1_data.py            # Datos específicos de Unidad 1
 │
 ├── modules/                        # Contenido educativo por módulo
@@ -73,7 +75,8 @@ voltiq/
 │       └── unit_1/
 │           ├── __init__.py
 │           ├── teoria.py           # Contenido teórico (12+ secciones con LaTeX)
-│           ├── ejercicios.py       # 5 ejercicios interactivos con opciones
+│           ├── ejercicios.py       # Banco de ejercicios + selector de cuestionarios formativos
+│           ├── cuestionarios.py    # Mecánica de evaluación formativa (2 intentos · pista · revelar · puntaje)
 │           ├── glosario.py         # Diccionario de términos eléctricos
 │           └── graficos.py         # Simuladores interactivos con Plotly
 │

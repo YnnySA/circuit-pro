@@ -5,6 +5,8 @@ Departamento de Ingeniería Eléctrica, Universidad de Concepción.
 """
 import streamlit as st
 
+from modules.students.unit_1 import cuestionarios
+
 
 # ── Banco de ejercicios ───────────────────────────────────────────────────────
 EJERCICIOS = [
@@ -210,3 +212,7 @@ def render():
                         f"{ej['explicacion']}",
                         icon="📖",
                     )
+
+    # ── Cuestionarios formativos (selector) ──────────────────────────────────
+    st.divider()
+    cuestionarios.render()
