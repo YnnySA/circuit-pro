@@ -220,13 +220,13 @@ def _grafico_fasorial(R_val, X_val, Z_val, phi):
     fig.add_shape(type="line", x0=0, y0=X_val, x1=R_val, y1=X_val,
                   line=dict(color="#cccccc", dash="dot", width=1))
 
-    # Etiqueta R: debajo del vector (yshift negativo), alineada al centro
+    # Vector R: desde (0,0) hasta (R_val,0)
     fig.add_annotation(
         ax=0, ay=0, x=R_val, y=0,
         xref="x", yref="y", axref="x", ayref="y",
         showarrow=True, arrowhead=2, arrowwidth=2,
         arrowcolor=_C["R"],
-        text=f"R={fmt(R_val, 1)} Ω",
+        text=f"R={fmt(R_val, 1)} Ohm",
         font=dict(color=_C["R"], size=11),
         xanchor="center", yanchor="top",
         yshift=-8,
@@ -235,31 +235,33 @@ def _grafico_fasorial(R_val, X_val, Z_val, phi):
     if abs(X_val) > 0.01:
         xc = _C["XL"] if X_val > 0 else _C["XC"]
         lbl = "XL" if X_val > 0 else "XC"
-        # Etiqueta XL/XC: a la derecha del vector vertical
+        # Vector XL/XC: desde (R_val,0) hasta (R_val,X_val)
         fig.add_annotation(
             ax=R_val, ay=0, x=R_val, y=X_val,
             xref="x", yref="y", axref="x", ayref="y",
             showarrow=True, arrowhead=2, arrowwidth=2,
             arrowcolor=xc,
-            text=f"{lbl}={fmt(abs(X_val), 1)} Ω",
+            text=f"{lbl}={fmt(abs(X_val), 1)} Ohm",
             font=dict(color=xc, size=11),
             xanchor="left", yanchor="middle",
             xshift=8,
         )
 
-    # Etiqueta Z: al lado de la mitad del vector diagonal (no en la punta)
-    mid_x = R_val / 2
-    mid_y = X_val / 2
+    # Vector Z: flecha desde (0,0) hasta (R_val,X_val)
     fig.add_annotation(
         ax=0, ay=0, x=R_val, y=X_val,
         xref="x", yref="y", axref="x", ayref="y",
         showarrow=True, arrowhead=2, arrowwidth=2.5,
         arrowcolor=_C["Z"],
-        text=f"Z={fmt(Z_val, 2)} Ω",
+        text="",
+    )
+    # Etiqueta Z posicionada en el punto medio del vector
+    fig.add_annotation(
+        x=R_val / 2, y=X_val / 2,
+        xref="x", yref="y",
+        showarrow=False,
+        text=f"Z={fmt(Z_val, 2)} Ohm",
         font=dict(color=_C["Z"], size=12, weight="bold"),
-        # Posiciona la etiqueta en el punto medio del vector con offset perpendicular
-        ax=0, ay=0,
-        x=mid_x, y=mid_y,
         xshift=-14 if R_val > 0 else 14,
         yshift=10,
         xanchor="right" if R_val > 0 else "left",
@@ -299,7 +301,7 @@ def _grafico_potencias(P, Q, S):
         line=dict(color="rgba(0,0,0,0)"), showlegend=False, hoverinfo="skip",
     ))
 
-    # Etiqueta P: debajo del vector horizontal
+    # Vector P: desde (0,0) hasta (P,0)
     fig.add_annotation(
         ax=0, ay=0, x=P, y=0,
         xref="x", yref="y", axref="x", ayref="y",
@@ -312,7 +314,7 @@ def _grafico_potencias(P, Q, S):
     )
 
     if abs(Q) > 0.01:
-        # Etiqueta Q: a la derecha del vector vertical
+        # Vector Q: desde (P,0) hasta (P,Q)
         fig.add_annotation(
             ax=P, ay=0, x=P, y=Q,
             xref="x", yref="y", axref="x", ayref="y",
@@ -324,17 +326,21 @@ def _grafico_potencias(P, Q, S):
             xshift=8,
         )
 
-    # Etiqueta S: en la mitad del vector diagonal con offset perpendicular
-    mid_x = P / 2
-    mid_y = Q / 2
+    # Vector S: flecha desde (0,0) hasta (P,Q)
     fig.add_annotation(
         ax=0, ay=0, x=P, y=Q,
         xref="x", yref="y", axref="x", ayref="y",
         showarrow=True, arrowhead=2, arrowwidth=2.5,
         arrowcolor=_C["S"],
+        text="",
+    )
+    # Etiqueta S posicionada en el punto medio del vector
+    fig.add_annotation(
+        x=P / 2, y=Q / 2,
+        xref="x", yref="y",
+        showarrow=False,
         text=f"S={fmt(S, 2)} VA",
         font=dict(color=_C["S"], size=12, weight="bold"),
-        x=mid_x, y=mid_y,
         xshift=-14 if P > 0 else 14,
         yshift=10,
         xanchor="right" if P > 0 else "left",
@@ -686,7 +692,7 @@ def render():
         ], accent="#457b9d")
 
         if abs(ph) < 1:
-            st.success("Resonancia: XL = XC — Z minima, corriente maxima")
+            st.success("Resonancia: XL = XC - Z minima, corriente maxima")
         elif ph > 0:
             st.info(f"Circuito Inductivo: corriente se atrasa {abs(ph):.1f} deg respecto al voltaje")
         else:
