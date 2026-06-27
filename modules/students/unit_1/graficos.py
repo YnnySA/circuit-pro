@@ -571,6 +571,24 @@ def render():
         "Universidad de Concepcion - Depto. Ingenieria Electrica"
     )
 
+    # ------------------------------------------------------------------
+    # APLICAR PRESET PENDIENTE antes de instanciar cualquier widget
+    # Esto evita el error: session_state key cannot be modified after
+    # widget is instantiated. Los presets escriben en "_ohm_*_pending"
+    # y aqui los trasladamos a las keys reales antes de que los widgets
+    # se creen en este ciclo de ejecucion.
+    # ------------------------------------------------------------------
+    for src, dst in [
+        ("_ohm_type_pending",   "ohm_type"),
+        ("_ohm_V_pending",      "ohm_V"),
+        ("_ohm_R_pending",      "ohm_R"),
+        ("_ohm_f_pending",      "ohm_f"),
+        ("_ohm_L_pending",      "ohm_L"),
+        ("_ohm_C_pending",      "ohm_C"),
+    ]:
+        if src in st.session_state:
+            st.session_state[dst] = st.session_state.pop(src)
+
     # Inicializar estado
     for k, v in [
         ("ohm_attempts", {"current": 0, "power": 0, "impedance": 0, "phase": 0}),
@@ -616,12 +634,14 @@ def render():
         cols_p = st.columns(len(presets))
         for i, (name, vals) in enumerate(presets.items()):
             if cols_p[i].button(name, key=f"ohm_preset_{i}", use_container_width=True):
-                st.session_state["ohm_V"] = float(vals["V"])
-                st.session_state["ohm_R"] = float(vals["R"])
-                st.session_state["ohm_f"] = float(vals["f"])
-                st.session_state["ohm_L"] = float(vals["L"])
-                st.session_state["ohm_C"] = float(vals["C"])
-                st.session_state["ohm_type"] = vals["t"]
+                # Escribir en keys de staging (_pending) para evitar conflicto
+                # con widgets ya instanciados en este ciclo
+                st.session_state["_ohm_type_pending"] = vals["t"]
+                st.session_state["_ohm_V_pending"]    = float(vals["V"])
+                st.session_state["_ohm_R_pending"]    = float(vals["R"])
+                st.session_state["_ohm_f_pending"]    = float(vals["f"])
+                st.session_state["_ohm_L_pending"]    = float(vals["L"])
+                st.session_state["_ohm_C_pending"]    = float(vals["C"])
                 st.session_state["ohm_attempts"] = {"current": 0, "power": 0, "impedance": 0, "phase": 0}
                 st.session_state["ohm_show_fb"] = False
                 for k in ["ohm_user_I", "ohm_user_P", "ohm_user_Z", "ohm_user_phi"]:
