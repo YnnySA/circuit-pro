@@ -1,682 +1,529 @@
 """
 Simulador de Flujo de Carga — Red de 2 Buses
-Método de Gauss-Seidel | Valores por unidad [pu]
-Desarrollado por Dr. Maykop Perez Martinez
-Universidad de Concepción - Depto. Ingeniería Eléctrica
+Método de Gauss-Seidel | V₁ = V₂ + Z·I | Sistema en valores por unidad [pu]
+Desarrollado por Dr. Maykop Pérez Martínez — Universidad de Concepción (UdeC)
+Departamento de Ingeniería Eléctrica
 
-100% Python + Streamlit + Plotly (sin HTML embebido)
+Replica fiel a la aplicación de referencia:
+- Layout: columna izquierda parámetros / columna derecha diagramas
+- Diagrama del Circuito: Nodo2(izq) → Z_línea → Nodo1(der) con tierra, capacitor, carga
+- Diagrama Fasorial: fondo oscuro, 4 vectores V₁, V₂, ΔV=Z·I, I
+- Resultados: tabla completa con forma polar + rectangular
+- Relaciones Fundamentales al pie
 """
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
-# ---------------------------------------------------------------------------
-# COLORES Y LAYOUT BASE (consistente con graficos.py)
-# ---------------------------------------------------------------------------
-_LAYOUT = dict(
-    paper_bgcolor="white",
-    plot_bgcolor="#f8f9fa",
-    font=dict(color="#333333", family="Segoe UI, sans-serif", size=12),
-    margin=dict(l=48, r=24, t=40, b=40),
-)
-_C = {
-    "V1":     "#1d3557",
-    "V2":     "#457b9d",
-    "I":      "#e63946",
-    "Z":      "#2d6a4f",
-    "P":      "#e63946",
-    "Q":      "#6d28d9",
-    "S":      "#1d3557",
-    "loss":   "#f4a261",
-    "grid":   "#e0e0e0",
-    "arrow":  "#1d3557",
-    "bus1":   "#1d3557",
-    "bus2":   "#457b9d",
-    "gen":    "#2d6a4f",
-    "load":   "#e63946",
-    "cap":    "#059669",
-    "wire":   "#555555",
-}
+# ── PALETA OSCURA (fiel a la referencia) ────────────────────────────────────
+BG      = "#0d1b2a"
+PANEL   = "#112240"
+BORDER  = "#1e3a5f"
+YELLOW  = "#f5c518"
+CYAN    = "#00d4d4"
+ORANGE  = "#ff6b35"
+GREEN   = "#2ecc71"
+PURPLE  = "#9b59b6"
+SALMON  = "#e07b7b"
+WHITE   = "#e8eaf6"
+GRAY    = "#7f8c8d"
+RED     = "#e74c3c"
 
+# Colores de vectores fasorial (exactos de la referencia)
+COL_V1  = "#e74c3c"   # rojo
+COL_V2  = "#e07b7b"   # salmón
+COL_DV  = "#00d4d4"   # turquesa
+COL_I   = "#00bfff"   # cian
 
-# ---------------------------------------------------------------------------
-# TARJETAS DE MÉTRICAS (igual que graficos.py)
-# ---------------------------------------------------------------------------
-def _metric_cards(items, accent="#1d3557"):
-    cards_html = ""
-    for label, value, unit in items:
-        cards_html += f"""
-        <div class="mc">
-          <div class="mc-label">{label}</div>
-          <div class="mc-value">{value}<span class="mc-unit"> {unit}</span></div>
-        </div>"""
-    html = f"""
+# ── CSS GLOBAL ───────────────────────────────────────────────────────────────
+def _inject_css():
+    st.markdown(f"""
     <style>
-      .mc-grid {{
+    .stApp, [data-testid="stAppViewContainer"] {{
+        background-color: {BG};
+        color: {WHITE};
+    }}
+    [data-testid="stSidebar"] {{ background-color: {PANEL}; }}
+    .fc-panel {{
+        background: {PANEL};
+        border: 1px solid {BORDER};
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 12px;
+    }}
+    .fc-panel-title {{
+        color: {YELLOW};
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        display: flex; align-items: center; gap: 6px;
+    }}
+    .fc-result-row {{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-bottom: 6px;
+    }}
+    .fc-result-cell {{
+        background: #0d1b2a;
+        border-radius: 6px;
+        padding: 8px 10px;
+        border-left: 3px solid {CYAN};
+    }}
+    .fc-result-label {{
+        font-size: 0.7rem; color: {GRAY}; margin-bottom: 2px;
+    }}
+    .fc-result-polar {{
+        font-size: 0.92rem; font-weight: 700; color: {YELLOW};
+    }}
+    .fc-result-rect {{
+        font-size: 0.78rem; color: {CYAN};
+    }}
+    .fc-rel-grid {{
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px; margin-bottom: 10px;
-      }}
-      @media (max-width: 600px) {{ .mc-grid {{ grid-template-columns: repeat(2, 1fr); }} }}
-      .mc {{
-        background: #f0f2f6; border-radius: 8px;
-        padding: 10px 12px 8px;
-        border-left: 3px solid {accent};
-      }}
-      .mc-label {{
-        font-size: 0.72rem; color: #6b7280; font-weight: 500;
-        text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px;
-      }}
-      .mc-value {{
-        font-size: 1.05rem; font-weight: 700; color: #1f2937;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      }}
-      .mc-unit {{
-        font-size: 0.78rem; font-weight: 400; color: #6b7280; margin-left: 3px;
-      }}
+        gap: 8px;
+    }}
+    @media (max-width:700px) {{ .fc-rel-grid {{ grid-template-columns: 1fr 1fr; }} }}
+    .fc-rel-card {{
+        background: {PANEL};
+        border: 1px solid {BORDER};
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+    }}
+    .fc-rel-name  {{ font-size:0.72rem; color:{GRAY}; margin-bottom:4px; }}
+    .fc-rel-eq    {{ font-size:0.95rem; font-weight:700; color:{YELLOW}; }}
+    label, .stSlider label, .stRadio label {{
+        color: {WHITE} !important;
+        font-size: 0.82rem !important;
+    }}
+    .fc-badge-ok  {{ background:#1a4731; color:#2ecc71;
+                     border-radius:20px; padding:3px 14px;
+                     font-weight:700; font-size:0.82rem; display:inline-block; }}
+    .fc-badge-err {{ background:#4a1a1a; color:#e74c3c;
+                     border-radius:20px; padding:3px 14px;
+                     font-weight:700; font-size:0.82rem; display:inline-block; }}
+    .fc-main-title {{
+        text-align:center; font-size:1.6rem; font-weight:800;
+        color:{YELLOW}; margin-bottom:2px;
+    }}
+    .fc-subtitle {{ text-align:center; color:{GRAY}; font-size:0.8rem; margin-bottom:16px; }}
     </style>
-    <div class="mc-grid">{cards_html}</div>
-    """
-    st.markdown(html, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 
-# ---------------------------------------------------------------------------
-# MATEMÁTICA DE NÚMEROS COMPLEJOS (numpy)
-# ---------------------------------------------------------------------------
+# ── MATEMÁTICA ───────────────────────────────────────────────────────────────
 def _cpolar(r, deg):
-    """Complejo desde módulo y ángulo en grados."""
     return complex(r * np.cos(np.radians(deg)), r * np.sin(np.radians(deg)))
-
-
-def _fN(x, d=4):
-    if not np.isfinite(x):
-        return "∞"
-    return f"{x:.{d}f}"
-
 
 def _fPol(c, d=4):
     return f"{abs(c):.{d}f} ∠ {np.degrees(np.angle(c)):.2f}°"
 
-
-def _fC(c, d=4):
+def _fRect(c, d=4):
     s = "+" if c.imag >= 0 else "−"
-    return f"{c.real:.{d}f} {s} j{abs(c.imag):.{d}f}"
+    return f"{c.real:.{d}f} {s} j{abs(c.imag):.{d}f} pu"
 
-
-# ---------------------------------------------------------------------------
-# SOLUCIONADOR GAUSS-SEIDEL
-# ---------------------------------------------------------------------------
 def solve(R, X, Pload, Qload, Qcap, V2mag, V2ang):
-    """
-    Red de 2 buses:
-      Bus 1: slack (V1 = incógnita)
-      Bus 2: PQ  (V2 = dato, carga P+jQ, compensación jQcap)
-
-    Retorna dict con todos los resultados.
-    """
-    S1 = complex(-Pload, Qcap - Qload)   # potencia inyectada en bus 2
-    V2 = _cpolar(V2mag, V2ang)
-    Z  = complex(R, X)
-
-    if abs(Z) < 1e-6:
-        I     = np.conj(S1) / np.conj(V2)
-        S2    = V2 * np.conj(I)
-        return dict(ok=True, iters=0, V1=V2, I=I, S2=S2,
-                    Sloss=0+0j, V2=V2, dV=0+0j)
-
-    Y  = 1 / Z
-    Yn = -Y
-
-    V1 = _cpolar(V2mag, 0)
-    ok = False
-    iters = 0
-    for k in range(3000):
-        rhs  = np.conj(S1) / np.conj(V1) - Yn * V2
-        V1_new = rhs / Y
-        err  = abs(V1_new - V1)
-        V1   = V1_new
-        iters = k + 1
-        if err < 1e-10:
-            ok = True
-            break
-
-    I     = (V1 - V2) / Z
-    dV    = Z * I
-    S2    = V2 * np.conj(I)
-    I2    = abs(I) ** 2
-    Sloss = complex(I2 * R, I2 * X)
-    return dict(ok=ok, iters=iters, V1=V1, I=I, S2=S2,
-                Sloss=Sloss, V2=V2, dV=dV)
-
-
-# ---------------------------------------------------------------------------
-# GRÁFICO 1: DIAGRAMA UNIFILAR (SVG vía Plotly shapes + annotations)
-# ---------------------------------------------------------------------------
-def _grafico_unifilar(r):
-    V1 = r["V1"]; V2 = r["V2"]; I = r["I"]
-    V1m = abs(V1); V1a = np.degrees(np.angle(V1))
-    V2m = abs(V2); V2a = np.degrees(np.angle(V2))
-    Im  = abs(I);  Ia  = np.degrees(np.angle(I))
-
-    fig = go.Figure()
-
-    # Línea de transmisión (cable)
-    fig.add_shape(type="line", x0=2.2, y0=2, x1=5.8, y1=2,
-                  line=dict(color=_C["wire"], width=4))
-
-    # Generador (Bus 1) - círculo izquierdo
-    theta = np.linspace(0, 2 * np.pi, 60)
-    fig.add_trace(go.Scatter(
-        x=1.0 + 0.55 * np.cos(theta), y=2.0 + 0.55 * np.sin(theta),
-        fill="toself", fillcolor="#e8f4f8",
-        line=dict(color=_C["gen"], width=2.5),
-        mode="lines", showlegend=False, hoverinfo="skip",
-    ))
-    fig.add_annotation(x=1.0, y=2.0, text="~", showarrow=False,
-                       font=dict(size=22, color=_C["gen"], weight="bold"))
-    # Bus 1 vertical
-    fig.add_shape(type="line", x0=2.2, y0=0.9, x1=2.2, y1=3.1,
-                  line=dict(color=_C["bus1"], width=6))
-
-    # Carga (Bus 2) - rectángulo derecho
-    fig.add_shape(type="rect", x0=5.8, y0=1.4, x1=6.8, y1=2.6,
-                  fillcolor="#fff3e0", line=dict(color=_C["load"], width=2))
-    fig.add_annotation(x=6.3, y=2.0, text="P+jQ", showarrow=False,
-                       font=dict(size=11, color=_C["load"], weight="bold"))
-    # Bus 2 vertical
-    fig.add_shape(type="line", x0=5.8, y0=0.9, x1=5.8, y1=3.1,
-                  line=dict(color=_C["bus2"], width=6))
-
-    # Banco de capacitores (Bus 2, abajo)
-    fig.add_shape(type="line", x0=5.8, y0=0.9, x1=5.8, y1=0.5,
-                  line=dict(color=_C["cap"], width=2))
-    for yy in [0.38, 0.28]:
-        fig.add_shape(type="line", x0=5.4, y0=yy, x1=6.2, y1=yy,
-                      line=dict(color=_C["cap"], width=3))
-
-    # Etiquetas de tensión sobre las barras
-    fig.add_annotation(
-        x=2.2, y=3.3,
-        text=f"<b>Bus 1 (Slack)</b><br>V₁={_fN(V1m,4)} ∠{V1a:.2f}° pu",
-        showarrow=False, font=dict(color=_C["bus1"], size=11),
-        align="center", bgcolor="rgba(240,248,255,0.85)",
-        bordercolor=_C["bus1"], borderwidth=1, borderpad=4,
-    )
-    fig.add_annotation(
-        x=5.8, y=3.3,
-        text=f"<b>Bus 2 (PQ)</b><br>V₂={_fN(V2m,4)} ∠{V2a:.2f}° pu",
-        showarrow=False, font=dict(color=_C["bus2"], size=11),
-        align="center", bgcolor="rgba(232,244,253,0.85)",
-        bordercolor=_C["bus2"], borderwidth=1, borderpad=4,
-    )
-
-    # Corriente sobre el cable
-    fig.add_annotation(
-        x=4.0, y=2.35,
-        text=f"I = {_fN(Im,4)} ∠{Ia:.2f}° pu",
-        showarrow=True, arrowhead=2, arrowcolor=_C["I"],
-        ax=3.2, ay=2.35, axref="x", ayref="y",
-        font=dict(color=_C["I"], size=11, weight="bold"),
-        bgcolor="rgba(255,255,255,0.85)",
-    )
-
-    # Impedancia Z sobre el cable
-    fig.add_annotation(
-        x=4.0, y=1.6,
-        text=f"Z = {_fN(abs(complex(r.get('R', 0), r.get('X', 0))),3)} pu",
-        showarrow=False, font=dict(color=_C["Z"], size=11),
-        bgcolor="rgba(255,255,255,0.75)",
-    )
-
-    fig.update_layout(
-        **_LAYOUT,
-        title=dict(text="Diagrama Unifilar — Red de 2 Buses", font=dict(size=13)),
-        xaxis=dict(range=[0, 8], showgrid=False, zeroline=False,
-                   showticklabels=False),
-        yaxis=dict(range=[0, 4], showgrid=False, zeroline=False,
-                   showticklabels=False, scaleanchor="x", scaleratio=1),
-        height=320,
-    )
-    return fig
-
-
-# ---------------------------------------------------------------------------
-# GRÁFICO 2: DIAGRAMA FASORIAL (V1, V2, dV, I)
-# ---------------------------------------------------------------------------
-def _grafico_fasorial(r):
-    V1 = r["V1"]; V2 = r["V2"]; dV = r["dV"]; I = r["I"]
-    fig = go.Figure()
-
-    def _arrow(x0, y0, x1, y1, color, label, xsh=0, ysh=8):
-        fig.add_annotation(
-            ax=x0, ay=y0, x=x1, y=y1,
-            xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=3, arrowwidth=2.2,
-            arrowcolor=color, arrowsize=1.0,
-            text=label, font=dict(color=color, size=11),
-            xanchor="center", yanchor="bottom",
-            xshift=xsh, yshift=ysh,
-        )
-
-    _arrow(0, 0, V2.real, V2.imag, _C["V2"],
-           f"V₂={abs(V2):.4f}∠{np.degrees(np.angle(V2)):.2f}°")
-    _arrow(0, 0, V1.real, V1.imag, _C["V1"],
-           f"V₁={abs(V1):.4f}∠{np.degrees(np.angle(V1)):.2f}°")
-    _arrow(V2.real, V2.imag, V1.real, V1.imag, _C["Z"],
-           f"ΔV={abs(dV):.4f}∠{np.degrees(np.angle(dV)):.2f}°")
-
-    # Corriente escalada para visibilidad
-    Iscale = max(abs(V1), abs(V2)) * 0.6 / (abs(I) + 1e-9)
-    Iplot  = I * Iscale
-    _arrow(0, 0, Iplot.real, Iplot.imag, _C["I"],
-           "I (escalado)", ysh=-14)
-
-    m = max(abs(V1), abs(V2)) * 1.35 + 0.02
-    fig.update_layout(
-        **_LAYOUT,
-        title=dict(text="Diagrama Fasorial — Tensiones y Corriente", font=dict(size=13)),
-        xaxis=dict(range=[-m * 0.15, m], zeroline=True, zerolinecolor="#aaa",
-                   gridcolor=_C["grid"], title="Real [pu]"),
-        yaxis=dict(range=[-m * 0.5, m * 0.5], zeroline=True, zerolinecolor="#aaa",
-                   gridcolor=_C["grid"], title="Imag [pu]", scaleanchor="x"),
-        height=340,
-        showlegend=False,
-    )
-    return fig
-
-
-# ---------------------------------------------------------------------------
-# GRÁFICO 3: TRIÁNGULO DE POTENCIAS (Bus 2)
-# ---------------------------------------------------------------------------
-def _grafico_potencias(r):
-    S2 = r["S2"]; Sl = r["Sloss"]
-    P  = S2.real; Q = S2.imag; S = abs(S2)
-    Pl = Sl.real; Ql = Sl.imag
-
-    fig = go.Figure()
-
-    # Fondo del triángulo
-    fig.add_trace(go.Scatter(
-        x=[0, P, P, 0], y=[0, 0, Q, 0],
-        fill="toself", fillcolor="rgba(29,53,87,0.06)",
-        line=dict(color="rgba(0,0,0,0)"), showlegend=False, hoverinfo="skip",
-    ))
-
-    def _arrow(x0, y0, x1, y1, color, label, xsh=0, ysh=8):
-        fig.add_annotation(
-            ax=x0, ay=y0, x=x1, y=y1,
-            xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowwidth=2,
-            arrowcolor=color,
-            text=label, font=dict(color=color, size=11),
-            xanchor="center", yanchor="bottom",
-            xshift=xsh, yshift=ysh,
-        )
-
-    _arrow(0, 0, P, 0, _C["P"], f"P={P:.5f} pu")
-    if abs(Q) > 1e-4:
-        _arrow(P, 0, P, Q, _C["Q"], f"Q={Q:.5f} pu", xsh=8)
-
-    # Vector S
-    fig.add_annotation(
-        ax=0, ay=0, x=P, y=Q,
-        xref="x", yref="y", axref="x", ayref="y",
-        showarrow=True, arrowhead=2, arrowwidth=2.5,
-        arrowcolor=_C["S"], text="",
-    )
-    fig.add_annotation(
-        x=P / 2, y=Q / 2, showarrow=False,
-        text=f"S={S:.5f} pu",
-        font=dict(color=_C["S"], size=12, weight="bold"),
-        xshift=-12, yshift=10, xanchor="right", yanchor="bottom",
-    )
-
-    # Pérdidas
-    if abs(Pl) > 1e-6:
-        fig.add_annotation(
-            x=Pl / 2, y=-0.05 * S, showarrow=False,
-            text=f"Pₗₒₛₛ={Pl:.6f} pu  |  Qₗₒₛₛ={Ql:.6f} pu",
-            font=dict(color=_C["loss"], size=10),
-        )
-
-    m = S * 0.3 + 0.01
-    fig.update_layout(
-        **_LAYOUT,
-        title=dict(text="Triángulo de Potencias — Bus 2", font=dict(size=13)),
-        xaxis=dict(range=[-m * 0.15, P + m], zeroline=True,
-                   zerolinecolor="#aaa", gridcolor=_C["grid"], title="P [pu]"),
-        yaxis=dict(range=[min(-m, Q - m * 0.3), max(m, Q + m * 0.3)],
-                   zeroline=True, zerolinecolor="#aaa",
-                   gridcolor=_C["grid"], title="Q [pu]", scaleanchor="x"),
-        height=320,
-    )
-    return fig
-
-
-# ---------------------------------------------------------------------------
-# GRÁFICO 4: CONVERGENCIA GAUSS-SEIDEL
-# ---------------------------------------------------------------------------
-@st.cache_data(show_spinner=False)
-def _convergencia_data(R, X, Pload, Qload, Qcap, V2mag, V2ang):
-    """Registra el error por iteración para visualizar la convergencia."""
     S1 = complex(-Pload, Qcap - Qload)
     V2 = _cpolar(V2mag, V2ang)
     Z  = complex(R, X)
-    if abs(Z) < 1e-6:
-        return [0.0], True
-
-    Y  = 1 / Z
-    Yn = -Y
+    if abs(Z) < 1e-9:
+        I  = np.conj(S1) / np.conj(V2) if abs(V2) > 1e-9 else 0+0j
+        S2 = V2 * np.conj(I)
+        return dict(ok=True, iters=0, V1=V2, I=I, S2=S2,
+                    Sloss=0+0j, V2=V2, dV=0+0j, Z=Z,
+                    S_from=S2, S_to=S2)
+    Y  = 1 / Z; Yn = -Y
     V1 = _cpolar(V2mag, 0)
-    errors = []
-    ok = False
-    for k in range(200):
+    ok = False; iters = 0
+    for k in range(3000):
         rhs    = np.conj(S1) / np.conj(V1) - Yn * V2
         V1_new = rhs / Y
         err    = abs(V1_new - V1)
-        errors.append(float(err))
-        V1     = V1_new
+        V1     = V1_new; iters = k + 1
         if err < 1e-10:
-            ok = True
-            break
-    return errors, ok
+            ok = True; break
+    I      = (V1 - V2) / Z
+    dV     = Z * I
+    S2     = V2 * np.conj(I)
+    I2     = abs(I) ** 2
+    Sloss  = complex(I2 * R, I2 * X)
+    S_from = V2 * np.conj(I)
+    S_to   = V1 * np.conj(I)
+    return dict(ok=ok, iters=iters, V1=V1, I=I, S2=S2,
+                Sloss=Sloss, V2=V2, dV=dV, Z=Z,
+                S_from=S_from, S_to=S_to)
 
 
-def _grafico_convergencia(errors, ok):
-    iters = list(range(1, len(errors) + 1))
+# ── DIAGRAMA DEL CIRCUITO ────────────────────────────────────────────────────
+def _fig_circuito(r, R, X, Qcap):
+    V1 = r["V1"]; V2 = r["V2"]; I = r["I"]
+    dV = r["dV"]; S_from = r["S_from"]; S_to = r["S_to"]
+
     fig = go.Figure()
+    N2x, N1x, Cy = 1.5, 8.5, 4.0
+    ht = 1.8
+
+    def ann(x, y, text, color=WHITE, size=11, xsh=0, ysh=0, anchor="center"):
+        fig.add_annotation(x=x, y=y, text=text, showarrow=False,
+                           font=dict(color=color, size=size),
+                           xanchor=anchor, yanchor="middle",
+                           xshift=xsh, yshift=ysh,
+                           bgcolor="rgba(0,0,0,0)")
+
+    def line(x0, y0, x1, y1, color=GRAY, width=2):
+        fig.add_shape(type="line", x0=x0, y0=y0, x1=x1, y1=y1,
+                      line=dict(color=color, width=width))
+
+    # Cable
+    line(N2x, Cy, N1x, Cy, color="#4a6fa5", width=3)
+
+    # Barras
+    line(N2x, Cy-ht, N2x, Cy+ht, color=ORANGE, width=6)
+    line(N1x, Cy-ht, N1x, Cy+ht, color=RED,    width=6)
+
+    # Títulos nodos
+    ann(N2x, Cy+ht+0.5, "<b>Nodo 2</b>", ORANGE, size=13)
+    ann(N1x, Cy+ht+0.5, "<b>Nodo 1</b>", RED,    size=13)
+
+    # Generador
+    theta = np.linspace(0, 2*np.pi, 60)
+    Gx, Gy, Gr = N2x-1.6, Cy, 0.5
     fig.add_trace(go.Scatter(
-        x=iters, y=errors, mode="lines+markers",
-        line=dict(color="#1d3557", width=2),
-        marker=dict(size=5, color="#e63946"),
-        name="Error ‖ΔV‖",
-        hovertemplate="Iter %{x}: error=%{y:.2e}<extra></extra>",
+        x=Gx+Gr*np.cos(theta), y=Gy+Gr*np.sin(theta),
+        fill="toself", fillcolor=PANEL,
+        line=dict(color=YELLOW, width=2.5),
+        mode="lines", showlegend=False, hoverinfo="skip",
     ))
-    fig.add_hline(y=1e-10, line_dash="dot", line_color="#059669",
-                  annotation_text="ε = 1e-10", annotation_position="right")
-    conv_str = "✓ Convergió" if ok else "✗ No convergió"
+    ann(Gx, Gy+0.15, "<b>~</b>", YELLOW, size=20)
+    ann(Gx-0.15, Gy-0.25, "+", WHITE, size=11)
+    ann(Gx-0.15, Gy+0.25, "−", WHITE, size=11)
+    line(Gx+Gr, Gy, N2x, Cy, color=YELLOW, width=2)
+
+    # Tierra Nodo2
+    line(N2x, Cy-ht, N2x, Cy-ht-0.3, color=CYAN, width=2)
+    for w, yy in [(0.5,0),(0.35,-0.18),(0.2,-0.34)]:
+        yb = Cy-ht-0.3-yy
+        line(N2x-w/2, yb, N2x+w/2, yb, color=CYAN, width=2)
+
+    # Caja Z_línea
+    Zmx = (N2x+N1x)/2; Zmy = Cy; Zw, Zh = 1.3, 0.9
+    fig.add_shape(type="rect", x0=Zmx-Zw, y0=Zmy-Zh, x1=Zmx+Zw, y1=Zmy+Zh,
+                  fillcolor="#1a2f4a", line=dict(color=YELLOW, width=2))
+    ann(Zmx, Zmy+0.35, "Z<sub>línea</sub> = R + jX", YELLOW, size=11)
+    sign = "+" if X >= 0 else "−"
+    ann(Zmx, Zmy-0.25, f"<b>{R:.2f} {sign} j{abs(X):.2f} pu</b>", CYAN, size=13)
+    ann(Zmx, Zmy-Zh-0.4, "ΔV<sub>línea</sub> = <i>I</i> · Z", GRAY, size=10)
+    ann(Zmx, Zmy-Zh-0.85, f"{_fPol(dV, 4)}", GREEN, size=10)
+
+    # Corriente I
+    fig.add_annotation(
+        ax=N2x+0.3, ay=Cy+0.55, x=N1x-0.3, y=Cy+0.55,
+        xref="x", yref="y", axref="x", ayref="y",
+        showarrow=True, arrowhead=2, arrowwidth=2, arrowcolor=CYAN,
+        text=f"<b><i>I</i> = {_fPol(I, 4)}</b>",
+        font=dict(color=CYAN, size=11),
+        xanchor="center", yanchor="bottom", yshift=4,
+    )
+
+    # Flujos S₂ y S₂₁
+    S2s = "+" if S_from.imag >= 0 else "−"
+    ann((N2x+Zmx)/2, Cy+0.18, "S₂ =", GRAY, size=9)
+    ann((N2x+Zmx)/2, Cy-0.18,
+        f"{S_from.real:.3f} {S2s} j{abs(S_from.imag):.3f} pu", WHITE, size=9)
+    fig.add_annotation(
+        ax=N2x+0.2, ay=Cy+0.05, x=Zmx-Zw-0.1, y=Cy+0.05,
+        xref="x", yref="y", axref="x", ayref="y",
+        showarrow=True, arrowhead=2, arrowwidth=1.5, arrowcolor=WHITE, text="",
+    )
+    S21s = "+" if S_to.imag >= 0 else "−"
+    ann((Zmx+N1x)/2, Cy+0.18, "S₂₁ =", GRAY, size=9)
+    ann((Zmx+N1x)/2, Cy-0.18,
+        f"{S_to.real:.3f} {S21s} j{abs(S_to.imag):.3f} pu", WHITE, size=9)
+    fig.add_annotation(
+        ax=Zmx+Zw+0.1, ay=Cy+0.05, x=N1x-0.2, y=Cy+0.05,
+        xref="x", yref="y", axref="x", ayref="y",
+        showarrow=True, arrowhead=2, arrowwidth=1.5, arrowcolor=WHITE, text="",
+    )
+
+    # Tensiones debajo de barras
+    ann(N2x, Cy-ht-1.2, "V₂ =", GRAY, size=10)
+    ann(N2x, Cy-ht-1.65, f"<b>{_fPol(V2, 2)}</b>", ORANGE, size=11)
+    ann(N1x, Cy-ht-1.2, "V₁ =", GRAY, size=10)
+    ann(N1x, Cy-ht-1.65, f"<b>{_fPol(V1, 4)}</b>", RED, size=11)
+
+    # Capacitor Qc (Nodo1, arriba-derecha)
+    Ccx = N1x+1.2; Ccy = Cy+ht+0.6
+    line(N1x, Cy+ht, N1x, Ccy-0.25, color=CYAN, width=2)
+    line(N1x, Ccy-0.25, Ccx, Ccy-0.25, color=CYAN, width=2)
+    line(Ccx, Ccy-0.25, Ccx, Ccy+0.05, color=CYAN, width=2)
+    for dy in [0.05, 0.25]:
+        line(Ccx-0.4, Ccy+dy, Ccx+0.4, Ccy+dy, color=CYAN, width=3)
+    ann(Ccx, Ccy+0.65, f"Q<sub>C</sub> = {Qcap:.2f} pu", CYAN, size=11)
+    line(Ccx, Ccy+0.3, Ccx, Ccy+0.6, color=CYAN, width=2)
+    for w, dy in [(0.4,0),(0.28,0.15),(0.16,0.3)]:
+        line(Ccx-w/2, Ccy+0.6+dy, Ccx+w/2, Ccy+0.6+dy, color=CYAN, width=2)
+
+    # Carga PL+jQL (Nodo1, derecha)
+    Lx0, Lx1 = N1x+0.2, N1x+1.7
+    Ly0, Ly1 = Cy-0.8, Cy+0.45
+    line(N1x, Cy, Lx0, Cy, color=PURPLE, width=2)
+    fig.add_shape(type="rect", x0=Lx0, y0=Ly0, x1=Lx1, y1=Ly1,
+                  fillcolor="#1a1040", line=dict(color=PURPLE, width=2))
+    ann((Lx0+Lx1)/2, (Ly0+Ly1)/2+0.18,
+        "P<sub>L</sub> + jQ<sub>L</sub>", PURPLE, size=11)
+    ann((Lx0+Lx1)/2, (Ly0+Ly1)/2-0.2,
+        f"<b>{r['S2'].real:.2f} + j{r['S2'].imag:.2f} pu</b>", WHITE, size=11)
+
+    # Tierra Nodo1
+    line(N1x, Cy-ht, N1x, Cy-ht-0.3, color=CYAN, width=2)
+    for w, yy in [(0.5,0),(0.35,-0.18),(0.2,-0.34)]:
+        yb = Cy-ht-0.3-yy
+        line(N1x-w/2, yb, N1x+w/2, yb, color=CYAN, width=2)
+
     fig.update_layout(
-        **_LAYOUT,
-        title=dict(text=f"Convergencia Gauss-Seidel — {conv_str}", font=dict(size=13)),
-        xaxis=dict(title="Iteración", gridcolor=_C["grid"]),
-        yaxis=dict(title="‖ΔV‖ [pu]", type="log", gridcolor=_C["grid"]),
-        height=300,
+        paper_bgcolor=PANEL, plot_bgcolor=PANEL,
+        xaxis=dict(range=[-0.5, 11], showgrid=False, zeroline=False,
+                   showticklabels=False),
+        yaxis=dict(range=[0.5, 7.2], showgrid=False, zeroline=False,
+                   showticklabels=False, scaleanchor="x", scaleratio=0.9),
+        margin=dict(l=10, r=10, t=10, b=10),
+        height=420, showlegend=False,
     )
     return fig
 
 
-# ---------------------------------------------------------------------------
-# RENDER PRINCIPAL
-# ---------------------------------------------------------------------------
-def render():
-    st.markdown("## ⚡ Flujo de Carga — Red de 2 Buses")
-    st.caption(
-        "Método de Gauss-Seidel  |  Sistema en valores por unidad [pu]  |  "
-        "Desarrollado por Dr. Maykop Perez Martinez · Universidad de Concepción"
-    )
+# ── DIAGRAMA FASORIAL ────────────────────────────────────────────────────────
+def _fig_fasorial(r):
+    V1 = r["V1"]; V2 = r["V2"]; dV = r["dV"]; I = r["I"]
+    fig = go.Figure()
 
-    # Aplicar presets pendientes (mismo patrón anti-doble-trigger de graficos.py)
+    Iscale = max(abs(V1), abs(V2)) * 0.7 / (abs(I) + 1e-9)
+    Iplot  = I * Iscale
+
+    def vec(x0, y0, x1, y1, color):
+        fig.add_annotation(
+            ax=x0, ay=y0, x=x1, y=y1,
+            xref="x", yref="y", axref="x", ayref="y",
+            showarrow=True, arrowhead=3, arrowwidth=2.5,
+            arrowcolor=color, arrowsize=1.1, text="",
+        )
+        fig.add_trace(go.Scatter(
+            x=[x0, x1], y=[y0, y1], mode="lines",
+            line=dict(color=color, width=2),
+            showlegend=False, hoverinfo="skip",
+        ))
+
+    vec(0, 0, V2.real, V2.imag, COL_V2)
+    vec(0, 0, V1.real, V1.imag, COL_V1)
+    vec(V2.real, V2.imag, V1.real, V1.imag, COL_DV)
+    vec(0, 0, Iplot.real, Iplot.imag, COL_I)
+
+    def label(x, y, text, color, xsh=10, ysh=0):
+        fig.add_annotation(x=x, y=y, text=f"<b>{text}</b>",
+                           showarrow=False, font=dict(color=color, size=12),
+                           xshift=xsh, yshift=ysh)
+
+    label(V2.real, V2.imag, "V₂", COL_V2)
+    label(V1.real, V1.imag, "V₁", COL_V1)
+    label((V2.real+V1.real)/2, (V2.imag+V1.imag)/2, "ΔV", COL_DV, xsh=10, ysh=8)
+    label(Iplot.real, Iplot.imag, "I", COL_I)
+
+    fig.add_trace(go.Scatter(
+        x=[0], y=[0], mode="markers",
+        marker=dict(size=8, color=WHITE),
+        showlegend=False, hoverinfo="skip",
+    ))
+
+    for col, name in [(COL_V1,"V₁"),(COL_V2,"V₂"),(COL_DV,"ΔV = Z·I"),(COL_I,"I")]:
+        fig.add_trace(go.Scatter(
+            x=[None], y=[None], mode="markers",
+            marker=dict(size=10, color=col),
+            name=name, showlegend=True,
+        ))
+
+    m = max(abs(V1), abs(V2), abs(Iplot)) * 1.4 + 0.05
+    fig.update_layout(
+        paper_bgcolor=BG, plot_bgcolor=BG,
+        xaxis=dict(range=[-m, m], zeroline=True, zerolinecolor="#2a4a7f",
+                   zerolinewidth=1.5, showgrid=True, gridcolor="#1a3050",
+                   tickfont=dict(color=GRAY),
+                   title=dict(text="Re", font=dict(color=WHITE, size=12))),
+        yaxis=dict(range=[-m*0.8, m*0.8], zeroline=True, zerolinecolor="#2a4a7f",
+                   zerolinewidth=1.5, showgrid=True, gridcolor="#1a3050",
+                   tickfont=dict(color=GRAY),
+                   title=dict(text="Im", font=dict(color=WHITE, size=12)),
+                   scaleanchor="x", scaleratio=1),
+        margin=dict(l=40, r=20, t=20, b=40),
+        height=360, showlegend=True,
+        legend=dict(orientation="h", y=-0.18, x=0.5, xanchor="center",
+                    font=dict(color=WHITE, size=12),
+                    bgcolor="rgba(0,0,0,0)"),
+        font=dict(color=WHITE),
+    )
+    return fig
+
+
+# ── RESULTADOS ───────────────────────────────────────────────────────────────
+def _resultados_html(r):
+    V1 = r["V1"]; V2 = r["V2"]; I = r["I"]
+    S2 = r["S2"]; Sl = r["Sloss"]; dV = r["dV"]
+    eta = S2.real / (S2.real + Sl.real + 1e-12) * 100
+
+    badge = (f'<span class="fc-badge-ok">✓ Gauss-Seidel — {r["iters"]} iter</span>'
+             if r["ok"] else
+             '<span class="fc-badge-err">✗ No convergió</span>')
+
+    def row(label, polar, rect, accent=CYAN):
+        return f"""
+        <div class="fc-result-cell" style="border-left-color:{accent}">
+          <div class="fc-result-label">{label}</div>
+          <div class="fc-result-polar">{polar}</div>
+          <div class="fc-result-rect">{rect}</div>
+        </div>"""
+
+    html = f"""
+    <div style="margin-bottom:8px">{badge}</div>
+    <div class="fc-result-row">
+      {row("Tensión Bus 1 (Slack) — V₁", _fPol(V1,4), _fRect(V1,4), RED)}
+      {row("Corriente de línea — I", _fPol(I,4), _fRect(I,4), CYAN)}
+    </div>
+    <div class="fc-result-row">
+      {row("Pot. Activa Bus 2→1 — P₂₁", f"{S2.real:.5f} pu", "Re(V₁·I*)", ORANGE)}
+      {row("Pot. Reactiva Bus 2→1 — Q₂₁", f"{S2.imag:.5f} pu", "Im(V₁·I*)", PURPLE)}
+    </div>
+    <div class="fc-result-row">
+      {row("Pot. Aparente — S₂", _fPol(S2,4), _fRect(S2,4), YELLOW)}
+      {row("Caída de tensión — ΔV = Z·I", _fPol(dV,4), _fRect(dV,4), GREEN)}
+    </div>
+    <div class="fc-result-row">
+      {row("Pérdidas activas — P_loss = |I|²·R", f"{Sl.real:.6f} pu", f"|I|²={abs(I)**2:.5f}", SALMON)}
+      {row("Pérdidas reactivas — Q_loss = |I|²·X", f"{Sl.imag:.6f} pu", f"η = {eta:.2f}%", SALMON)}
+    </div>
+    """
+    st.markdown(html, unsafe_allow_html=True)
+
+
+# ── RELACIONES FUNDAMENTALES ─────────────────────────────────────────────────
+def _relaciones_html():
+    rels = [
+        ("TENSIÓN DE ENVÍO",     "V₁ = V₂ + Z · I"),
+        ("POTENCIA RECIBIDA",    "S₂₁ = V₁ · I* = P₂₁ + jQ₂₁"),
+        ("CORRIENTE DE LÍNEA",   "I = S₂₁* / V₁* = (V₂−V₁) / Z"),
+        ("PÉRDIDAS EN LA LÍNEA", "S loss = |I|² · Z = P loss + jQ loss"),
+        ("ADMITANCIA DE LÍNEA",  "Y = 1/Z = G + jB"),
+        ("BALANCE DE POTENCIA",  "S gen = S carga + S loss"),
+    ]
+    cards = "".join(f"""
+        <div class="fc-rel-card">
+          <div class="fc-rel-name">{name}</div>
+          <div class="fc-rel-eq">{eq}</div>
+        </div>""" for name, eq in rels)
+    st.markdown(f'<div class="fc-rel-grid">{cards}</div>', unsafe_allow_html=True)
+
+
+# ── RENDER PRINCIPAL ─────────────────────────────────────────────────────────
+def render():
+    _inject_css()
+
+    st.markdown('<div class="fc-main-title">⚡ Flujo de Carga — Red de 2 Buses</div>',
+                unsafe_allow_html=True)
+    st.markdown(
+        '<div class="fc-subtitle">'
+        'Método de Gauss Seidel &nbsp;|&nbsp; <b>V₁ = V₂ + Z·I</b> &nbsp;|&nbsp; '
+        'Sistema en valores por unidad [pu]'
+        '</div>', unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="fc-panel" style="display:flex;align-items:center;gap:16px;padding:12px 16px">
+      <div>
+        <div style="color:{WHITE};font-size:0.82rem;margin-bottom:2px">Desarrollado por:</div>
+        <div style="color:{WHITE};font-weight:700;font-size:1rem">Dr. Maykop Pérez Martínez</div>
+        <div style="color:{CYAN};font-size:0.85rem">Universidad de Concepción (UdeC)</div>
+        <div style="color:{GRAY};font-size:0.78rem">Departamento de Ingeniería Eléctrica</div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Presets pendientes
     for src, dst in [
-        ("_fc_R_pending",  "fc_R"),
-        ("_fc_X_pending",  "fc_X"),
-        ("_fc_P_pending",  "fc_P"),
-        ("_fc_Q_pending",  "fc_Q"),
-        ("_fc_Qc_pending", "fc_Qc"),
-        ("_fc_V_pending",  "fc_V"),
-        ("_fc_A_pending",  "fc_A"),
+        ("_fc_R_p","fc_R"),("_fc_X_p","fc_X"),("_fc_P_p","fc_P"),
+        ("_fc_Q_p","fc_Q"),("_fc_Qc_p","fc_Qc"),("_fc_V_p","fc_V"),("_fc_A_p","fc_A"),
     ]:
         if src in st.session_state:
             st.session_state[dst] = st.session_state.pop(src)
 
-    # ------------------------------------------------------------------
-    # CONFIGURACIÓN DEL CIRCUITO
-    # ------------------------------------------------------------------
-    with st.expander("⚙️ Configuración del circuito", expanded=True):
-        st.markdown("**Casos predefinidos:**")
-        presets = {
-            "Resistivo puro": dict(R=0.00, X=0.50, P=0.50, Q=1.00, Qc=1.00, V=1.00, A=0.0),
-            "Inductivo":      dict(R=0.05, X=0.30, P=0.80, Q=0.60, Qc=0.00, V=0.95, A=0.0),
-            "Capacitivo":     dict(R=0.02, X=0.40, P=0.40, Q=-0.30, Qc=0.50, V=1.00, A=0.0),
-            "Alta carga":     dict(R=0.10, X=0.60, P=1.20, Q=0.90, Qc=0.80, V=0.90, A=-5.0),
-            "Sin pérdidas":   dict(R=0.00, X=0.50, P=0.60, Q=0.40, Qc=0.40, V=1.00, A=0.0),
-        }
-        cols_p = st.columns(len(presets))
-        for i, (name, vals) in enumerate(presets.items()):
-            if cols_p[i].button(name, key=f"fc_preset_{i}", use_container_width=True):
-                for k2, v2 in [("R", vals["R"]), ("X", vals["X"]),
-                               ("P", vals["P"]), ("Q", vals["Q"]),
-                               ("Qc", vals["Qc"]), ("V", vals["V"]),
-                               ("A", vals["A"])]:
-                    st.session_state[f"_fc_{k2}_pending"] = float(v2)
-                st.rerun()
+    col_left, col_right = st.columns([1, 2], gap="medium")
+
+    with col_left:
+        st.markdown(f'<div class="fc-panel-title">🔧 Parámetros de la Red</div>',
+                    unsafe_allow_html=True)
+        st.markdown(f"<span style='color:{CYAN};font-size:0.8rem'>"
+                    "Línea de transmisión:<br>Z = R + jX [pu] &nbsp;|&nbsp; Caída de tensión: ΔV = Z · I"
+                    "</span>", unsafe_allow_html=True)
+        R = st.slider("R — Resistencia [pu]", 0.00, 0.50,
+                      float(st.session_state.get("fc_R", 0.20)), 0.01, key="fc_R")
+        X = st.slider("X — Reactancia [pu]",  0.00, 1.00,
+                      float(st.session_state.get("fc_X", 0.74)), 0.01, key="fc_X")
+
+        st.markdown(f"<span style='color:{CYAN};font-size:0.8rem'>"
+                    "Carga en Bus 1:<br>S<sub>carga</sub> = P<sub>L</sub> + jQ<sub>L</sub> [pu]"
+                    "<br>Compensación: Q<sub>C</sub> (banco capacitivo)"
+                    "</span>", unsafe_allow_html=True)
+        Pload = st.slider("Pₗ — Potencia activa [pu]",   0.00, 2.00,
+                          float(st.session_state.get("fc_P", 1.35)), 0.01, key="fc_P")
+        Qload = st.slider("Qₗ — Potencia reactiva [pu]", -1.00, 2.00,
+                          float(st.session_state.get("fc_Q", 1.00)), 0.01, key="fc_Q")
+        Qcap  = st.slider("Qc — Banco capacitivo [pu]",  0.00, 2.00,
+                          float(st.session_state.get("fc_Qc", 1.00)), 0.01, key="fc_Qc")
+
+        st.markdown(f"<span style='color:{CYAN};font-size:0.8rem'>"
+                    "Bus 2 (barra slack):<br>V₂ = |V₂| ∠ δ₂ [pu]"
+                    "<br>Referencia angular del sistema"
+                    "</span>", unsafe_allow_html=True)
+        V2mag = st.slider("|V₂| — Módulo [pu]", 0.80, 1.20,
+                          float(st.session_state.get("fc_V", 0.98)), 0.01, key="fc_V")
+        V2ang = st.slider("δ₂ — Ángulo [°]",   -30.0, 10.0,
+                          float(st.session_state.get("fc_A", 0.00)), 0.5,  key="fc_A")
 
         st.markdown("---")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("**Parámetros de la línea Z = R + jX**")
-            R = st.slider("Resistencia R [pu]", 0.00, 0.50,
-                          float(st.session_state.get("fc_R", 0.00)), 0.01, key="fc_R")
-            X = st.slider("Reactancia X [pu]", 0.00, 1.00,
-                          float(st.session_state.get("fc_X", 0.50)), 0.01, key="fc_X")
-        with col2:
-            st.markdown("**Carga en Bus 2**")
-            Pload = st.slider("Potencia activa P [pu]", 0.00, 2.00,
-                              float(st.session_state.get("fc_P", 0.50)), 0.01, key="fc_P")
-            Qload = st.slider("Potencia reactiva Q [pu]", -1.00, 2.00,
-                              float(st.session_state.get("fc_Q", 1.00)), 0.01, key="fc_Q")
-            Qcap  = st.slider("Compensación capacitiva Qc [pu]", 0.00, 2.00,
-                              float(st.session_state.get("fc_Qc", 1.00)), 0.01, key="fc_Qc")
+        st.markdown(f"<span style='color:{YELLOW};font-size:0.8rem;font-weight:700'>"
+                    "Casos predefinidos:</span>", unsafe_allow_html=True)
+        presets = {
+            "Resistivo":  dict(R=0.00,X=0.50,P=0.50,Q=1.00,Qc=1.00,V=1.00,A=0.0),
+            "Inductivo":  dict(R=0.05,X=0.30,P=0.80,Q=0.60,Qc=0.00,V=0.95,A=0.0),
+            "Referencia": dict(R=0.20,X=0.74,P=1.35,Q=1.00,Qc=1.00,V=0.98,A=0.0),
+            "Alta carga": dict(R=0.10,X=0.60,P=1.20,Q=0.90,Qc=0.80,V=0.90,A=-5.0),
+            "Capacitivo": dict(R=0.02,X=0.40,P=0.40,Q=-0.30,Qc=0.50,V=1.00,A=0.0),
+        }
+        c1, c2 = st.columns(2)
+        for i, (name, vals) in enumerate(presets.items()):
+            col = c1 if i % 2 == 0 else c2
+            if col.button(name, key=f"fc_pre_{i}", use_container_width=True):
+                for k2, v2 in [("R",vals["R"]),("X",vals["X"]),("P",vals["P"]),
+                               ("Q",vals["Q"]),("Qc",vals["Qc"]),("V",vals["V"]),("A",vals["A"])]:
+                    st.session_state[f"_fc_{k2}_p"] = float(v2)
+                st.rerun()
 
-        st.markdown("**Bus 2 — Condición inicial**")
-        ca, cb = st.columns(2)
-        with ca:
-            V2mag = st.slider("|V₂| [pu]", 0.80, 1.20,
-                              float(st.session_state.get("fc_V", 1.00)), 0.01, key="fc_V")
-        with cb:
-            V2ang = st.slider("∠V₂ [°]", -30.0, 10.0,
-                              float(st.session_state.get("fc_A", 0.00)), 0.5, key="fc_A")
-
-    # ------------------------------------------------------------------
-    # CÁLCULO
-    # ------------------------------------------------------------------
     r = solve(R, X, Pload, Qload, Qcap, V2mag, V2ang)
-    r["R"] = R; r["X"] = X; r["Qcap"] = Qcap
 
-    V1 = r["V1"]; V2 = r["V2"]
-    I  = r["I"];  S2 = r["S2"]
-    Sl = r["Sloss"]; dV = r["dV"]
-
-    # Badge de convergencia
-    if r["ok"]:
-        st.success(f"✓ Convergió en {r['iters']} iteraciones", icon="✅")
-    else:
-        st.error("✗ No convergió — verifica los parámetros", icon="⚠️")
+    with col_right:
+        st.markdown(f'<div class="fc-panel-title">🔌 Diagrama del Circuito</div>',
+                    unsafe_allow_html=True)
+        st.plotly_chart(_fig_circuito(r, R, X, Qcap),
+                        use_container_width=True, key="fc_circ")
+        st.markdown(f'<div class="fc-panel-title">📐 Diagrama Fasorial</div>',
+                    unsafe_allow_html=True)
+        st.plotly_chart(_fig_fasorial(r),
+                        use_container_width=True, key="fc_fas")
 
     st.markdown("---")
-    st.markdown("### Resultados")
+    st.markdown(f'<div class="fc-panel-title">📊 Resultados</div>',
+                unsafe_allow_html=True)
+    _resultados_html(r)
 
-    _metric_cards([
-        ("V₁ (módulo)", f"{abs(V1):.4f}", "pu"),
-        ("V₁ (ángulo)", f"{np.degrees(np.angle(V1)):.3f}", "°"),
-        ("|ΔV|",        f"{abs(dV):.4f}", "pu"),
-    ], accent=_C["bus1"])
-
-    _metric_cards([
-        ("|I|",         f"{abs(I):.4f}", "pu"),
-        ("∠I",          f"{np.degrees(np.angle(I)):.3f}", "°"),
-        ("Iteraciones", str(r["iters"]), ""),
-    ], accent=_C["I"])
-
-    _metric_cards([
-        ("P entregada",  f"{S2.real:.5f}", "pu"),
-        ("Q entregada",  f"{S2.imag:.5f}", "pu"),
-        ("|S|",          f"{abs(S2):.5f}", "pu"),
-    ], accent=_C["P"])
-
-    _metric_cards([
-        ("Pₗₒₛₛ",        f"{Sl.real:.6f}", "pu"),
-        ("Qₗₒₛₛ",        f"{Sl.imag:.6f}", "pu"),
-        ("η = P/(P+Pₗ)", f"{S2.real / (S2.real + Sl.real + 1e-12) * 100:.2f}", "%"),
-    ], accent=_C["loss"])
-
-    # Valores completos
-    with st.expander("📐 Valores completos en forma polar y rectangular"):
-        col_a, col_b = st.columns(2)
-        with col_a:
-            st.markdown("**Tensión V₁ (Slack)**")
-            st.code(f"Polar:  {_fPol(V1, 4)}\nRect:   {_fC(V1, 4)} pu")
-            st.markdown("**Corriente I**")
-            st.code(f"Polar:  {_fPol(I, 4)}\nRect:   {_fC(I, 4)} pu")
-        with col_b:
-            st.markdown("**Caída de tensión ΔV = Z·I**")
-            st.code(f"Polar:  {_fPol(dV, 5)}\nRect:   {_fC(dV, 4)} pu")
-            st.markdown("**Potencia aparente S₂**")
-            st.code(f"Polar:  {_fPol(S2, 4)}\nRect:   {_fC(S2, 4)} pu")
-
-    # ------------------------------------------------------------------
-    # GRÁFICOS
-    # ------------------------------------------------------------------
     st.markdown("---")
-    tab_unif, tab_fas, tab_pot, tab_conv = st.tabs([
-        "🔌 Diagrama Unifilar",
-        "📐 Diagrama Fasorial",
-        "⚡ Triángulo de Potencias",
-        "📈 Convergencia G-S",
-    ])
-
-    with tab_unif:
-        st.plotly_chart(_grafico_unifilar(r), use_container_width=True, key="fc_unif")
-
-    with tab_fas:
-        st.plotly_chart(_grafico_fasorial(r), use_container_width=True, key="fc_fas")
-
-    with tab_pot:
-        st.plotly_chart(_grafico_potencias(r), use_container_width=True, key="fc_pot")
-
-    with tab_conv:
-        errors, ok_conv = _convergencia_data(R, X, Pload, Qload, Qcap, V2mag, V2ang)
-        st.plotly_chart(_grafico_convergencia(errors, ok_conv),
-                        use_container_width=True, key="fc_conv")
-
-    # ------------------------------------------------------------------
-    # ZONA DE PRÁCTICA PEDAGÓGICA
-    # ------------------------------------------------------------------
-    st.markdown("---")
-    st.markdown("### 🎓 Practica: verifica tu comprensión")
-    st.caption(
-        "Resuelve con lápiz y papel usando los parámetros configurados. "
-        "Tienes 2 intentos por pregunta antes de ver el procedimiento completo."
-    )
-
-    for k, v in [
-        ("fc_attempts", {"V1": 0, "I": 0, "P": 0}),
-        ("fc_show_fb",  False),
-        ("fc_user_V1",  ""),
-        ("fc_user_I",   ""),
-        ("fc_user_P",   ""),
-    ]:
-        if k not in st.session_state:
-            st.session_state[k] = v
-
-    pc1, pc2, pc3 = st.columns(3)
-    with pc1:
-        user_V1 = st.text_input("|V₁| (pu):", value=st.session_state["fc_user_V1"],
-                                placeholder="Ej: 1.0500", key="fc_ui_V1")
-    with pc2:
-        user_I  = st.text_input("|I| (pu):", value=st.session_state["fc_user_I"],
-                                placeholder="Ej: 0.7200", key="fc_ui_I")
-    with pc3:
-        user_P  = st.text_input("P entregada (pu):", value=st.session_state["fc_user_P"],
-                                placeholder="Ej: 0.5000", key="fc_ui_P")
-
-    pb1, pb2 = st.columns([1, 1])
-    with pb1:
-        verificar = st.button("Verificar respuestas", type="primary",
-                              use_container_width=True, key="fc_verificar")
-    with pb2:
-        if st.button("Reiniciar práctica", use_container_width=True, key="fc_reset"):
-            st.session_state["fc_attempts"] = {"V1": 0, "I": 0, "P": 0}
-            st.session_state["fc_show_fb"]  = False
-            for k in ["fc_user_V1", "fc_user_I", "fc_user_P"]:
-                st.session_state[k] = ""
-            st.rerun()
-
-    if verificar:
-        att = st.session_state["fc_attempts"]
-        if user_V1:
-            att["V1"] += 1
-            st.session_state["fc_user_V1"] = user_V1
-        if user_I:
-            att["I"] += 1
-            st.session_state["fc_user_I"] = user_I
-        if user_P:
-            att["P"] += 1
-            st.session_state["fc_user_P"] = user_P
-        st.session_state["fc_attempts"] = att
-        st.session_state["fc_show_fb"]  = True
-        st.rerun()
-
-    if st.session_state["fc_show_fb"]:
-        att      = st.session_state["fc_attempts"]
-        corr_V1  = abs(V1)
-        corr_I   = abs(I)
-        corr_P   = S2.real
-
-        def _chk(user_str, correct, att_count, label, formula_steps):
-            try:
-                uval = float(user_str)
-            except (ValueError, TypeError):
-                return
-            tol = max(0.005 * abs(correct), 1e-4)
-            ok_ = abs(uval - correct) < tol
-            if ok_:
-                st.success(f"✓ Correcto — {label}")
-                with st.expander("Ver procedimiento"):
-                    for paso, det in formula_steps:
-                        st.markdown(f"**{paso}:** {det}")
-            else:
-                st.error(f"✗ Incorrecto — {label}")
-                if att_count <= 1:
-                    st.caption("Intento 1/2 — reflexiona antes de reintentar:")
-                    if label == "|V₁|":
-                        st.markdown("- Recuerda: V₁ se calcula por Gauss-Seidel a partir de V₂ y la carga")
-                        st.markdown("- ¿Calculaste la corriente I = (V₁−V₂)/Z primero?")
-                    elif label == "|I|":
-                        st.markdown("- La corriente fluye por la impedancia Z = R + jX")
-                        st.markdown("- I = (V₁ − V₂) / Z  (número complejo)")
-                    else:
-                        st.markdown("- P = Re(V₂ · I*) — fasor de tensión por conjugado de corriente")
-                        st.markdown("- ¿Usaste los valores en pu?")
-                else:
-                    st.caption("Intento 2/2 — procedimiento correcto:")
-                    for paso, det in formula_steps:
-                        st.markdown(f"**{paso}:** {det}")
-                    st.info(f"Respuesta correcta: {correct:.5f} pu")
-
-        u_V1 = st.session_state["fc_user_V1"]
-        u_I  = st.session_state["fc_user_I"]
-        u_P  = st.session_state["fc_user_P"]
-
-        if u_V1:
-            _chk(u_V1, corr_V1, att["V1"], "|V₁|", [
-                ("Ecuación", "V₁ = V₂ + Z·I"),
-                ("Z",        f"({R:.2f} + j{X:.2f}) pu"),
-                ("V₂",       f"{_fPol(V2, 4)}"),
-                ("I",        f"{_fPol(I, 4)}"),
-                ("|V₁|",     f"{corr_V1:.5f} pu"),
-            ])
-        if u_I:
-            _chk(u_I, corr_I, att["I"], "|I|", [
-                ("Ecuación",  "I = (V₁ − V₂) / Z"),
-                ("Numerador", f"{_fPol(V1 - V2, 4)}"),
-                ("Z",         f"{_fPol(complex(R, X), 4)}"),
-                ("|I|",       f"{corr_I:.5f} pu"),
-            ])
-        if u_P:
-            _chk(u_P, corr_P, att["P"], "P entregada", [
-                ("Ecuación",  "P = Re(V₂ · I*)"),
-                ("V₂",        f"{_fPol(V2, 4)}"),
-                ("I*",        f"{_fPol(np.conj(I), 4)}"),
-                ("S₂ = V₂·I*", f"{_fC(S2, 5)} pu"),
-                ("P = Re(S₂)", f"{corr_P:.5f} pu"),
-            ])
+    st.markdown(f'<div class="fc-panel-title">📐 Relaciones Fundamentales</div>',
+                unsafe_allow_html=True)
+    _relaciones_html()
