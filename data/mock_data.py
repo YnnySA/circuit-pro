@@ -16,13 +16,13 @@ STUDENT_UNITS = [
     },
     {
         "titulo": "Unidad 2 · Corriente Alterna y Fasores",
-        "progreso": 64,
+        "progreso": 32,
         "temas": ["Señales senoidales", "Impedancia", "Notación fasorial", "Potencia activa y reactiva"],
         "estado": "En curso",
     },
     {
         "titulo": "Unidad 3 · Sistemas Trifásicos",
-        "progreso": 18,
+        "progreso": 0,
         "temas": ["Conexión estrella/delta", "Potencia trifásica", "Factor de potencia"],
         "estado": "En curso",
     },

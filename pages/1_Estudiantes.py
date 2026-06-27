@@ -17,13 +17,20 @@ section_header(
 # --- Indicadores de avance general -------------------------------------
 prom = int(np.mean([u["progreso"] for u in STUDENT_UNITS]))
 completadas = sum(1 for u in STUDENT_UNITS if u["estado"] == "Completada")
+
+# Última respuesta correcta: se deriva del quiz si ya fue respondido correctamente
+if st.session_state.get("quiz_ohm_answered") and st.session_state.get("quiz_ohm_correct", False):
+    ultima_respuesta = QUIZ_OHM["correcta"]
+else:
+    ultima_respuesta = "—"
+
 m1, m2, m3, m4 = st.columns(4)
 with m1:
     metric_card(f"{prom}%", "Progreso global del curso")
 with m2:
     metric_card(f"{completadas}/{len(STUDENT_UNITS)}", "Unidades completadas")
 with m3:
-    metric_card("1.0 A", "Última respuesta correcta")
+    metric_card(ultima_respuesta, "Última respuesta correcta")
 with m4:
     metric_card("🔥 7", "Días de racha de estudio")
 
