@@ -38,8 +38,15 @@ tab_guia, tab_glosario, tab_ejercicio, tab_grafico = st.tabs([
 ])
 # ---- Tab 1: Guías por unidad ------------------------------------------
 with tab_guia:
+    # Solo la primera unidad "En curso" se expande por defecto;
+    # el resto (incluidas Unidad 2 y 3 que también están "En curso") queda contraído.
+    first_en_curso = next(
+        (i for i, u in enumerate(STUDENT_UNITS) if u["estado"] == "En curso"), None
+    )
+
     for i, u in enumerate(STUDENT_UNITS):
-        with st.expander(f"{u['titulo']}  ·  {u['estado']}", expanded=(u["estado"] == "En curso")):
+        should_expand = (i == first_en_curso)
+        with st.expander(f"{u['titulo']}  ·  {u['estado']}", expanded=should_expand):
             #st.progress(u["progreso"] / 100, text=f"Avance: {u['progreso']}%")
 
             if u["estado"] == "Bloqueada":
@@ -70,5 +77,3 @@ with tab_ejercicio:
 # ---- Tab 4: Gráficos explicativos --------------------------------------
 with tab_grafico:
     graficos.render()
-
-
