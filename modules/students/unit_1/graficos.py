@@ -220,29 +220,51 @@ def _grafico_fasorial(R_val, X_val, Z_val, phi):
     fig.add_shape(type="line", x0=0, y0=X_val, x1=R_val, y1=X_val,
                   line=dict(color="#cccccc", dash="dot", width=1))
 
-    fig.add_annotation(ax=0, ay=0, x=R_val, y=0,
-                       xref="x", yref="y", axref="x", ayref="y",
-                       showarrow=True, arrowhead=2, arrowwidth=2,
-                       arrowcolor=_C["R"],
-                       text=f"R={fmt(R_val,1)} Ohm",
-                       font=dict(color=_C["R"], size=11))
+    # Etiqueta R: debajo del vector (yshift negativo), alineada al centro
+    fig.add_annotation(
+        ax=0, ay=0, x=R_val, y=0,
+        xref="x", yref="y", axref="x", ayref="y",
+        showarrow=True, arrowhead=2, arrowwidth=2,
+        arrowcolor=_C["R"],
+        text=f"R={fmt(R_val, 1)} Ω",
+        font=dict(color=_C["R"], size=11),
+        xanchor="center", yanchor="top",
+        yshift=-8,
+    )
 
     if abs(X_val) > 0.01:
         xc = _C["XL"] if X_val > 0 else _C["XC"]
         lbl = "XL" if X_val > 0 else "XC"
-        fig.add_annotation(ax=R_val, ay=0, x=R_val, y=X_val,
-                           xref="x", yref="y", axref="x", ayref="y",
-                           showarrow=True, arrowhead=2, arrowwidth=2,
-                           arrowcolor=xc,
-                           text=f"{lbl}={fmt(abs(X_val),1)} Ohm",
-                           font=dict(color=xc, size=11))
+        # Etiqueta XL/XC: a la derecha del vector vertical
+        fig.add_annotation(
+            ax=R_val, ay=0, x=R_val, y=X_val,
+            xref="x", yref="y", axref="x", ayref="y",
+            showarrow=True, arrowhead=2, arrowwidth=2,
+            arrowcolor=xc,
+            text=f"{lbl}={fmt(abs(X_val), 1)} Ω",
+            font=dict(color=xc, size=11),
+            xanchor="left", yanchor="middle",
+            xshift=8,
+        )
 
-    fig.add_annotation(ax=0, ay=0, x=R_val, y=X_val,
-                       xref="x", yref="y", axref="x", ayref="y",
-                       showarrow=True, arrowhead=2, arrowwidth=2.5,
-                       arrowcolor=_C["Z"],
-                       text=f"Z={fmt(Z_val,2)} Ohm",
-                       font=dict(color=_C["Z"], size=12))
+    # Etiqueta Z: al lado de la mitad del vector diagonal (no en la punta)
+    mid_x = R_val / 2
+    mid_y = X_val / 2
+    fig.add_annotation(
+        ax=0, ay=0, x=R_val, y=X_val,
+        xref="x", yref="y", axref="x", ayref="y",
+        showarrow=True, arrowhead=2, arrowwidth=2.5,
+        arrowcolor=_C["Z"],
+        text=f"Z={fmt(Z_val, 2)} Ω",
+        font=dict(color=_C["Z"], size=12, weight="bold"),
+        # Posiciona la etiqueta en el punto medio del vector con offset perpendicular
+        ax=0, ay=0,
+        x=mid_x, y=mid_y,
+        xshift=-14 if R_val > 0 else 14,
+        yshift=10,
+        xanchor="right" if R_val > 0 else "left",
+        yanchor="bottom",
+    )
 
     if abs(phi) > 0.5:
         t_arc = np.linspace(0, np.radians(phi), 30)
@@ -276,22 +298,49 @@ def _grafico_potencias(P, Q, S):
         fill="toself", fillcolor="rgba(29,53,87,0.06)",
         line=dict(color="rgba(0,0,0,0)"), showlegend=False, hoverinfo="skip",
     ))
-    fig.add_annotation(ax=0, ay=0, x=P, y=0,
-                       xref="x", yref="y", axref="x", ayref="y",
-                       showarrow=True, arrowhead=2, arrowwidth=2,
-                       arrowcolor=_C["P"],
-                       text=f"P={fmt(P,2)} W", font=dict(color=_C["P"], size=11))
+
+    # Etiqueta P: debajo del vector horizontal
+    fig.add_annotation(
+        ax=0, ay=0, x=P, y=0,
+        xref="x", yref="y", axref="x", ayref="y",
+        showarrow=True, arrowhead=2, arrowwidth=2,
+        arrowcolor=_C["P"],
+        text=f"P={fmt(P, 2)} W",
+        font=dict(color=_C["P"], size=11),
+        xanchor="center", yanchor="top",
+        yshift=-8,
+    )
+
     if abs(Q) > 0.01:
-        fig.add_annotation(ax=P, ay=0, x=P, y=Q,
-                           xref="x", yref="y", axref="x", ayref="y",
-                           showarrow=True, arrowhead=2, arrowwidth=2,
-                           arrowcolor=_C["Q"],
-                           text=f"Q={fmt(abs(Q),2)} VAR", font=dict(color=_C["Q"], size=11))
-    fig.add_annotation(ax=0, ay=0, x=P, y=Q,
-                       xref="x", yref="y", axref="x", ayref="y",
-                       showarrow=True, arrowhead=2, arrowwidth=2.5,
-                       arrowcolor=_C["S"],
-                       text=f"S={fmt(S,2)} VA", font=dict(color=_C["S"], size=12))
+        # Etiqueta Q: a la derecha del vector vertical
+        fig.add_annotation(
+            ax=P, ay=0, x=P, y=Q,
+            xref="x", yref="y", axref="x", ayref="y",
+            showarrow=True, arrowhead=2, arrowwidth=2,
+            arrowcolor=_C["Q"],
+            text=f"Q={fmt(abs(Q), 2)} VAR",
+            font=dict(color=_C["Q"], size=11),
+            xanchor="left", yanchor="middle",
+            xshift=8,
+        )
+
+    # Etiqueta S: en la mitad del vector diagonal con offset perpendicular
+    mid_x = P / 2
+    mid_y = Q / 2
+    fig.add_annotation(
+        ax=0, ay=0, x=P, y=Q,
+        xref="x", yref="y", axref="x", ayref="y",
+        showarrow=True, arrowhead=2, arrowwidth=2.5,
+        arrowcolor=_C["S"],
+        text=f"S={fmt(S, 2)} VA",
+        font=dict(color=_C["S"], size=12, weight="bold"),
+        x=mid_x, y=mid_y,
+        xshift=-14 if P > 0 else 14,
+        yshift=10,
+        xanchor="right" if P > 0 else "left",
+        yanchor="bottom",
+    )
+
     phi = np.degrees(np.arctan2(Q, P))
     if abs(phi) > 0.5:
         t_arc = np.linspace(0, np.radians(phi), 30)
