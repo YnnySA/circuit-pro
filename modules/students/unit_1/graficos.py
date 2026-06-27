@@ -43,6 +43,68 @@ _C = {
 
 
 # ---------------------------------------------------------------------------
+# TARJETAS DE METRICAS RESPONSIVE
+# ---------------------------------------------------------------------------
+def _metric_cards(items, accent="#1d3557"):
+    """
+    items: lista de (label, value, unit)  -- unit puede ser "" si ya va en value
+    Renderiza tarjetas en grid: 3 por fila en desktop, 2 en mobile.
+    Fuente pequena para evitar truncamiento.
+    """
+    cards_html = ""
+    for label, value, unit in items:
+        cards_html += f"""
+        <div class="mc">
+          <div class="mc-label">{label}</div>
+          <div class="mc-value">{value}<span class="mc-unit">{unit}</span></div>
+        </div>"""
+
+    html = f"""
+    <style>
+      .mc-grid {{
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 10px;
+      }}
+      @media (max-width: 600px) {{
+        .mc-grid {{ grid-template-columns: repeat(2, 1fr); }}
+      }}
+      .mc {{
+        background: #f0f2f6;
+        border-radius: 8px;
+        padding: 10px 12px 8px;
+        border-left: 3px solid {accent};
+      }}
+      .mc-label {{
+        font-size: 0.72rem;
+        color: #6b7280;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 3px;
+      }}
+      .mc-value {{
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #1f2937;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }}
+      .mc-unit {{
+        font-size: 0.78rem;
+        font-weight: 400;
+        color: #6b7280;
+        margin-left: 3px;
+      }}
+    </style>
+    <div class="mc-grid">{cards_html}</div>
+    """
+    st.markdown(html, unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------------------
 # CALCULOS
 # ---------------------------------------------------------------------------
 def calcular_dc(V, R):
@@ -490,7 +552,7 @@ def render():
         # Casos predefinidos
         st.markdown("**Casos predefinidos:**")
         presets = {
-            "Resistivo puro":   dict(V=120, R=50,  f=60, L=0,   C=0,    t="AC"),
+            "Resistivo puro":    dict(V=120, R=50,  f=60, L=0,   C=0,    t="AC"),
             "Inductivo (motor)": dict(V=120, R=30,  f=60, L=100, C=0,    t="AC"),
             "Capacitivo":        dict(V=120, R=30,  f=60, L=0,   C=100,  t="AC"),
             "Resonancia":        dict(V=120, R=50,  f=60, L=265, C=26.5, t="AC"),
@@ -545,27 +607,34 @@ def render():
     S   = res["apparent_power"]
     fp  = res["power_factor"]
 
-    # Metricas
+    # ------------------------------------------------------------------
+    # METRICAS: tarjetas HTML responsive en lugar de st.metric 6 columnas
+    # ------------------------------------------------------------------
     st.markdown("---")
     st.markdown("### Resultados")
-    if current_type == "DC":
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Corriente I",  f"{fmt(I)} A")
-        m2.metric("Potencia P",   f"{fmt(P,2)} W")
-        m3.metric("Resistencia",  f"{R:.1f} Ohm")
-    else:
-        m1, m2, m3, m4, m5, m6 = st.columns(6)
-        m1.metric("|Z|",      f"{fmt(Z,2)} Ohm")
-        m2.metric("I",        f"{fmt(I,3)} A")
-        m3.metric("phi",      f"{ph:.1f} deg")
-        m4.metric("fp",       f"{fp:.4f}")
-        m5.metric("P activa", f"{fmt(P,1)} W")
-        m6.metric("Q react.", f"{fmt(Q,1)} VAR")
 
-        xl_m, xc_m, x_m = st.columns(3)
-        xl_m.metric("XL", f"{fmt(xl,2)} Ohm")
-        xc_m.metric("XC", f"{fmt(xc,2)} Ohm" if C > 0 else "0 Ohm")
-        x_m.metric("X neta", f"{fmt(xl-xc,2)} Ohm")
+    if current_type == "DC":
+        _metric_cards([
+            ("Corriente I",  fmt(I),        " A"),
+            ("Potencia P",   fmt(P, 2),     " W"),
+            ("Resistencia",  f"{R:.1f}",    " Ohm"),
+        ], accent="#1d3557")
+    else:
+        # Fila 1: magnitudes principales
+        _metric_cards([
+            ("|Z|",       fmt(Z, 2),          " Ohm"),
+            ("I",         fmt(I, 4),          " A"),
+            ("phi",       f"{ph:.2f}",        " deg"),
+            ("fp",        f"{fp:.4f}",        ""),
+            ("P activa",  fmt(P, 2),          " W"),
+            ("Q reactiva",fmt(Q, 2),          " VAR"),
+        ], accent="#1d3557")
+        # Fila 2: reactancias
+        _metric_cards([
+            ("XL",    fmt(xl, 3),          " Ohm"),
+            ("XC",    fmt(xc, 3) if C > 0 else "0",    " Ohm"),
+            ("X neta",fmt(xl - xc, 3),    " Ohm"),
+        ], accent="#457b9d")
 
         if abs(ph) < 1:
             st.success("Resonancia: XL = XC — Z minima, corriente maxima")
