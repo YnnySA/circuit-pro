@@ -5,7 +5,7 @@ import streamlit as st
 
 from components.ui import section_header, metric_card, chips, divider
 from data.mock_data import STUDENT_UNITS, QUIZ_OHM, RESISTANCE_OHMS
-from modules.students.unit_1 import teoria, glosario, ejercicios, graficos, flujo_carga, factor_potencia
+from modules.students.unit_1 import teoria, glosario, ejercicios, graficos, flujo_carga, factor_potencia, sistema6
 
 section_header(
     "Módulo · Estudiantes",
@@ -75,10 +75,11 @@ with tab_ejercicio:
 
 # ---- Tab 4: Visualización — sub-pestañas por simulador ----------------
 with tab_grafico:
-    sim_ohm, sim_flujo, sim_fp = st.tabs([
+    sim_ohm, sim_flujo, sim_fp, sim_s6 = st.tabs([
         "⚡ Simulador Ley de Ohm",
         "🔌 Flujo de Carga — 2 Buses",
         "⚙️ Mejora del Factor de Potencia",
+        "🎛️ Análisis Armónico Industrial",
     ])
     with sim_ohm:
         graficos.render()
@@ -86,3 +87,5 @@ with tab_grafico:
         flujo_carga.render()
     with sim_fp:
         factor_potencia.render()
+    with sim_s6:
+        sistema6.render()
