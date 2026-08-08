@@ -5,13 +5,15 @@ import streamlit as st
 
 from components.ui import section_header, metric_card, chips, divider
 from data.mock_data import STUDENT_UNITS, QUIZ_OHM, RESISTANCE_OHMS
+from data.i18n import t, get_language
 from modules.students.unit_1 import teoria, glosario, ejercicios, graficos, flujo_carga, factor_potencia, sistema6
 
+lang = get_language()
+
 section_header(
-    "Módulo · Estudiantes",
-    "🎓 Laboratorio digital de circuitos y máquinas eléctricas",
-    "Aprendizaje guiado por unidades, con ejercicios interactivos, gráficos explicativos "
-    "y retroalimentación inmediata.",
+    t("estudiantes.section_title", lang),
+    t("estudiantes.section_subtitle", lang),
+    t("estudiantes.section_description", lang),
 )
 
 # --- Indicadores de avance general -------------------------------------
@@ -26,22 +28,22 @@ else:
 
 m1, m2, m3, m4 = st.columns(4)
 with m1:
-    metric_card(f"{prom}%", "Progreso global del curso")
+    metric_card(f"{prom}%", t("estudiantes.metric_progress", lang))
 with m2:
-    metric_card(f"{completadas}/{len(STUDENT_UNITS)}", "Unidades completadas")
+    metric_card(f"{completadas}/{len(STUDENT_UNITS)}", t("estudiantes.metric_units", lang))
 with m3:
-    metric_card(ultima_respuesta, "Última respuesta correcta")
+    metric_card(ultima_respuesta, t("estudiantes.metric_last_answer", lang))
 with m4:
-    metric_card("🔥 7", "Días de racha de estudio")
+    metric_card("🔥 7", t("estudiantes.metric_streak", lang))
 
 divider()
 
 # --- Pestañas del módulo ------------------------------------------------
 tab_guia, tab_glosario, tab_ejercicio, tab_grafico = st.tabs([
-    "📚 Guías de aprendizaje",
-    "📖 Glosario",
-    "🧪 Ejercicio interactivo",
-    "📈 Visualización",
+    t("estudiantes.tab_guides", lang),
+    t("estudiantes.tab_glossary", lang),
+    t("estudiantes.tab_exercise", lang),
+    t("estudiantes.tab_graphics", lang),
 ])
 # ---- Tab 1: Guías por unidad ------------------------------------------
 with tab_guia:
@@ -49,43 +51,42 @@ with tab_guia:
         with st.expander(f"{u['titulo']}  ·  {u['estado']}", expanded=False):
 
             if u["estado"] == "Bloqueada":
-                st.warning("Completa la unidad anterior para desbloquear este contenido.", icon="🔒")
+                st.warning(t("estudiantes.unit_locked", lang), icon="🔒")
 
             elif u["estado"] == "Completada":
-                st.success("Unidad completada. ¡Buen trabajo!", icon="✅")
+                st.success(t("estudiantes.unit_completed", lang), icon="✅")
                 if i == 0:                    # ← solo Unidad 1
-                    teoria.render()
+                    teoria.render(lang)
 
             elif u["estado"] == "En curso":
                 if i == 0:                    # ← solo Unidad 1
-                    teoria.render()
+                    teoria.render(lang)
                 else:                         # ← Unidades 2, 3... en construcción
                     st.info(
-                        "🚧 Contenido en construcción. "
-                        "Esta unidad estará disponible próximamente.",
+                        t("estudiantes.unit_building", lang),
                         icon="🔨",
                     )
 # ---- Tab 2: Glosario ──────────────────────────────────────────────────
 with tab_glosario:
-    glosario.render()
+    glosario.render(lang)
 
 # ---- Tab 3: Ejercicios interactivos --------------------------------------
 with tab_ejercicio:
-    ejercicios.render()
+    ejercicios.render(lang)
 
 # ---- Tab 4: Visualización — sub-pestañas por simulador ----------------
 with tab_grafico:
     sim_ohm, sim_flujo, sim_fp, sim_s6 = st.tabs([
-        "⚡ Simulador Ley de Ohm",
-        "🔌 Flujo de Carga — 2 Buses",
-        "⚙️ Mejora del Factor de Potencia",
-        "🎛️ Análisis Armónico Industrial",
+        t("estudiantes.sim_ohm", lang),
+        t("estudiantes.sim_flow", lang),
+        t("estudiantes.sim_power_factor", lang),
+        t("estudiantes.sim_harmonics", lang),
     ])
     with sim_ohm:
-        graficos.render()
+        graficos.render(lang)
     with sim_flujo:
-        flujo_carga.render()
+        flujo_carga.render(lang)
     with sim_fp:
-        factor_potencia.render()
+        factor_potencia.render(lang)
     with sim_s6:
-        sistema6.render()
+        sistema6.render(lang)

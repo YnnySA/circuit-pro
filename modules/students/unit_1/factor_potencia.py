@@ -58,7 +58,13 @@ def _calcular_filtro(h: int, factor_q: float, tipo: str):
         st.session_state["fp_r_ohm"] = (w_h * l_h) / factor_q
 
 
-def render():
+def render(lang: str = "es"):
+    """Renderiza el simulador de mejora del factor de potencia.
+    
+    Args:
+        lang: Código de idioma ("es" para español, "en" para inglés).
+    """
+    from data.i18n import t
     _init_state()
 
     st.markdown("## Mejora del factor de potencia y propuesta de filtro")

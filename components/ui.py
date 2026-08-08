@@ -1,5 +1,5 @@
 """
-Componentes de interfaz reutilizables para CircuitProIA.
+Componentes de interfaz reutilizables para CircuitProAI.
 Funciones pequeñas y declarativas para mantener las páginas limpias.
 """
 import streamlit as st
@@ -79,7 +79,7 @@ def sidebar_brand():
         <div style='display:flex; align-items:flex-start; gap:0.5rem; padding:0.4rem 0 0.8rem 0;'>
             <img src='data:image/png;base64,{logo}' style='width:32px; height:32px; object-fit:contain;'/>
             <div>
-                <span style='font-size:1.5rem; font-weight:800; color:{COLORS['primary']};'>CircuitProIA</span><br/>
+                <span style='font-size:1.5rem; font-weight:800; color:{COLORS['primary']};'>CircuitProAI</span><br/>
                 <span style='font-size:0.78rem; color:{COLORS['muted']};'>IA aplicada a educación e industria</span>
             </div>
         </div>
@@ -89,21 +89,18 @@ def sidebar_brand():
     st.sidebar.markdown("---")
 
 
-def hero(pill: str, title: str, subtitle: str,
+def hero(title: str = "", subtitle: str = "",
+         pill: str = "",
          icon_size: int = 130,
-         icon_position: str = "left"):   # "right" | "left" | "top"
-    """Hero con ícono. 
-    icon_size: tamaño en px del logo (defecto 90).
-    icon_position: 'right' coloca el logo a la derecha del texto,
-                   'left' a la izquierda, 'top' encima del texto.
-    """
-    logo = _logo_b64()   # reutiliza la función que ya existe en ui.py
+         icon_position: str = "left"):
+    """Hero con ícono."""
+    logo = _logo_b64()
 
-    # Layout: "row" para left/right, "column" para top
     flex_dir = "column" if icon_position == "top" else "row"
-    img_order = "0" if icon_position == "left" or icon_position == "top" else "1"
-    text_order = "1" if icon_position == "left" or icon_position == "top" else "0"
+    img_order = "0" if icon_position in ("left", "top") else "1"
+    text_order = "1" if icon_position in ("left", "top") else "0"
     align = "center" if icon_position == "top" else "flex-start"
+    pill_html = f"<span class='pill'>{pill}</span>" if pill else ""
 
     st.markdown(
         f"""
@@ -111,11 +108,10 @@ def hero(pill: str, title: str, subtitle: str,
              align-items:{align}; gap:1.8rem;'>
             <img src='data:image/png;base64,{logo}'
                  style='order:{img_order}; width:{icon_size}px; height:{icon_size}px;
-                        object-fit:contain; flex-shrink:0;
-                        align-self: center;'
+                        object-fit:contain; flex-shrink:0; align-self:center;'
             />
             <div style='order:{text_order};'>
-                <span class='pill'>{pill}</span>
+                {pill_html}
                 <h1>{title}</h1>
                 <p>{subtitle}</p>
             </div>

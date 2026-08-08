@@ -1,5 +1,5 @@
 """
-Tema visual y estilos globales de CircuitProIA.
+Tema visual y estilos globales de CircuitProAI.
 Centraliza paleta, tipografía y CSS para mantener coherencia entre módulos.
 """
 import streamlit as st
@@ -26,10 +26,11 @@ def inject_global_css():
     st.markdown(
         f"""
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        /* Use a monospaced developer-style font (Consolas) with fallbacks */
+        /* If Consolas is not available, fall back to Courier New and generic monospace */
 
         html, body, [class*="css"] {{
-            font-family: 'Inter', sans-serif;
+            font-family: 'Consolas', 'Courier New', monospace;
         }}
         .stApp {{
             background: {COLORS['bg']};
@@ -142,17 +143,6 @@ def inject_global_css():
             line-height: 1.55;
             margin: 0;
         }}
-        .vq-hero .pill {{
-            display:inline-block;
-            background: rgba(255,255,255,0.16);
-            color: #fff;
-            font-weight:600;
-            font-size:0.8rem;
-            padding:0.3rem 0.8rem;
-            border-radius:999px;
-            margin-bottom:1rem;
-        }}
-
         /* Botones */
         .stButton > button {{
             border-radius: 10px;
@@ -192,7 +182,7 @@ def inject_global_css():
 def page_setup(title: str, icon: str = "None"):
     """Configuración estándar de página + CSS."""
     st.set_page_config(
-        page_title=f"CircuitProIA · {title}",
+        page_title=f"CircuitProAI · {title}",
         page_icon=icon,
         layout="wide",
         initial_sidebar_state="expanded",

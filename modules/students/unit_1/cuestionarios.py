@@ -252,8 +252,13 @@ def _render_resultado(qid: str, quiz: dict, estado: dict):
 
 
 # ── API pública ───────────────────────────────────────────────────────────────
-def render():
-    """Renderiza el selector de cuestionarios formativos y el quiz activo."""
+def render(lang: str = "es"):
+    """Renderiza el selector de cuestionarios formativos y el quiz activo.
+    
+    Args:
+        lang: Código de idioma ("es" para español, "en" para inglés).
+    """
+    from data.i18n import t
     st.markdown("#### 📝 Cuestionarios formativos — Unidad 1")
     st.markdown(
         "Evaluaciones con **retroalimentación formativa**: cada pregunta admite "

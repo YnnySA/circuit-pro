@@ -1,6 +1,6 @@
-# CircuitProIA — Plataforma Educativa e Industrial con IA
+# CircuitProAI — Plataforma Educativa e Industrial con IA
 
-**CircuitProIA (Voltiq)** es una plataforma especializada en educación e ingeniería eléctrica con inteligencia artificial, desarrollada como prototipo funcional v0.1 en **Streamlit** para presentación de pitch a inversores y jurados.
+**CircuitProAI (Voltiq)** es una plataforma especializada en educación e ingeniería eléctrica con inteligencia artificial, desarrollada como prototipo funcional v0.1 en **Streamlit** para presentación de pitch a inversores y jurados.
 
 ## 🎯 Propósito
 

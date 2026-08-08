@@ -122,8 +122,13 @@ EJERCICIOS = [
 ]
 
 
-def render():
-    """Renderiza el banco de ejercicios interactivos de la Unidad 1."""
+def render(lang: str = "es"):
+    """Renderiza el banco de ejercicios interactivos de la Unidad 1.
+    
+    Args:
+        lang: Código de idioma ("es" para español, "en" para inglés).
+    """
+    from data.i18n import t
 
     st.markdown("#### 🧪 Ejercicios Interactivos — Unidad 1")
     st.markdown(
@@ -215,4 +220,4 @@ def render():
 
     # ── Cuestionarios formativos (selector) ──────────────────────────────────
     st.divider()
-    cuestionarios.render()
+    cuestionarios.render(lang)

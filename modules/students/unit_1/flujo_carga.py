@@ -323,16 +323,19 @@ def _tabla_resultados(r):
 
 
 # ── RENDER PRINCIPAL ───────────────────────────────────────────────────────────
-def render():
-    st.title("⚡ Flujo de Carga — Red de 2 Buses")
+def render(lang: str = "es"):
+    """Renderiza el análisis de flujo de carga.
+    
+    Args:
+        lang: Código de idioma ("es" para español, "en" para inglés).
+    """
+    from data.i18n import t
+    st.title(t("fc.title", lang))
     st.caption(
-        "Método de Gauss Seidel \u00a0|  **V₁ = V₂ + Z·I** \u00a0|  "
-        "Sistema en valores por unidad [pu]"
+        t("fc.method", lang) + " \u00a0|  **" + t("fc.equation", lang) + "** \u00a0|  "
+        + t("fc.system", lang)
     )
-    st.caption(
-        "Desarrollado por **Dr. Maykop Pérez Martínez** \u00a0|  "
-        "Universidad de Concepción (UdeC) — Depto. Ingeniería Eléctrica"
-    )
+    st.caption(t("fc.author", lang))
     st.divider()
 
     for src, dst in [
@@ -346,39 +349,39 @@ def render():
     col_param, col_diag = st.columns([1, 2], gap="large")
 
     with col_param:
-        st.subheader("🎛️ Parámetros de la Red")
-        st.markdown("**Línea de transmisión:** Z = R + jX [pu] \u00a0|  ΔV = Z·I")
-        R = st.slider("R — Resistencia [pu]", 0.00, 0.50,
+        st.subheader(t("fc.network_params", lang))
+        st.markdown(t("fc.transmission_line", lang))
+        R = st.slider(t("fc.resistance", lang), 0.00, 0.50,
                       float(st.session_state.get("fc_R", 0.20)), 0.01,
                       key="fc_R", format="%.2f")
         X = st.slider("X — Reactancia [pu]", 0.00, 1.00,
                       float(st.session_state.get("fc_X", 0.74)), 0.01,
                       key="fc_X", format="%.2f")
-        st.markdown("**Carga en Bus 1:** Scarga = PL + jQL [pu]  \nCompensación: Qc (banco capacitivo)")
-        Pload = st.slider("Pₗ — Potencia activa [pu]", 0.00, 2.00,
+        st.markdown(t("fc.load_bus", lang))
+        Pload = st.slider(t("fc.active_power", lang), 0.00, 2.00,
                           float(st.session_state.get("fc_P", 1.35)), 0.01,
                           key="fc_P", format="%.2f")
         Qload = st.slider("Qₗ — Potencia reactiva [pu]", -1.00, 2.00,
                           float(st.session_state.get("fc_Q", 1.00)), 0.01,
                           key="fc_Q", format="%.2f")
-        Qcap  = st.slider("Qc — Banco capacitivo [pu]", 0.00, 2.00,
+        Qcap  = st.slider(t("fc.capacitor_bank", lang), 0.00, 2.00,
                           float(st.session_state.get("fc_Qc", 1.00)), 0.01,
                           key="fc_Qc", format="%.2f")
-        st.markdown("**Bus 2 (barra slack):** V₂ = |V₂| ∠ δ₂ [pu]  \nReferencia angular del sistema")
-        V2mag = st.slider("|V₂| — Módulo [pu]", 0.80, 1.20,
+        st.markdown(t("fc.slack_bus", lang))
+        V2mag = st.slider(t("fc.voltage_magnitude", lang), 0.80, 1.20,
                           float(st.session_state.get("fc_V", 0.98)), 0.01,
                           key="fc_V", format="%.2f")
-        V2ang = st.slider("δ₂ — Ángulo [°]", -30.0, 10.0,
+        V2ang = st.slider(t("fc.voltage_angle", lang), -30.0, 10.0,
                           float(st.session_state.get("fc_A", 0.00)), 0.5,
                           key="fc_A", format="%.1f")
         st.divider()
-        st.markdown("**Casos predefinidos:**")
+        st.markdown(t("fc.presets", lang))
         presets = {
-            "Resistivo":  (0.00, 0.50, 0.50,  1.00, 1.00, 1.00,  0.0),
-            "Inductivo":  (0.05, 0.30, 0.80,  0.60, 0.00, 0.95,  0.0),
-            "Referencia": (0.20, 0.74, 1.35,  1.00, 1.00, 0.98,  0.0),
-            "Alta carga": (0.10, 0.60, 1.20,  0.90, 0.80, 0.90, -5.0),
-            "Capacitivo": (0.02, 0.40, 0.40, -0.30, 0.50, 1.00,  0.0),
+            t("fc.preset_resistive", lang):   (0.00, 0.50, 0.50,  1.00, 1.00, 1.00,  0.0),
+            t("fc.preset_inductive", lang):   (0.05, 0.30, 0.80,  0.60, 0.00, 0.95,  0.0),
+            t("fc.preset_reference", lang):   (0.20, 0.74, 1.35,  1.00, 1.00, 0.98,  0.0),
+            t("fc.preset_high_load", lang):   (0.10, 0.60, 1.20,  0.90, 0.80, 0.90, -5.0),
+            t("fc.preset_capacitive", lang):  (0.02, 0.40, 0.40, -0.30, 0.50, 1.00,  0.0),
         }
         keys = ["R", "X", "P", "Q", "Qc", "V", "A"]
         c1, c2 = st.columns(2)
@@ -400,7 +403,7 @@ def render():
                         use_container_width=True, key="fc_fas")
 
     st.divider()
-    st.subheader("📊 Resultados")
+    st.subheader(t("fc.results", lang))
     badge = "✅ Convergió" if r["ok"] else "❌ No convergió"
     st.caption(f"Gauss-Seidel \u00a0{badge} — {r['iters']} iteraciones \u00a0|  ε < 1×10⁻¹⁰")
     _tabla_resultados(r)

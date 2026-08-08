@@ -142,8 +142,13 @@ TERMINOS = [
 CATEGORIAS = ["Todas"] + sorted(set(t["Categoría"] for t in TERMINOS))
 
 
-def render():
-    """Renderiza el glosario interactivo de la Unidad 1."""
+def render(lang: str = "es"):
+    """Renderiza el glosario interactivo de la Unidad 1.
+    
+    Args:
+        lang: Código de idioma ("es" para español, "en" para inglés).
+    """
+    from data.i18n import t
 
     st.markdown("#### 📚 Glosario de Términos — Unidad 1")
     st.markdown(

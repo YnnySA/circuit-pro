@@ -6,8 +6,13 @@ Departamento de Ingeniería Eléctrica, Universidad de Concepción.
 import streamlit as st
 
 
-def render():
-    """Renderiza el contenido teórico completo de la Unidad 1."""
+def render(lang: str = "es"):
+    """Renderiza el contenido teórico completo de la Unidad 1.
+    
+    Args:
+        lang: Código de idioma ("es" para español, "en" para inglés).
+    """
+    from data.i18n import t
 
     st.markdown("### 📖 Teoría — Unidad 1: Circuitos Eléctricos")
     st.markdown(

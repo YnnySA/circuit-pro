@@ -200,7 +200,13 @@ def _compute_postfilter(I, Rc, Xlc, t_vec, f_v, Unom_v, L_mH, C_uF, R_ohm, tipo)
     }
 
 
-def render():
+def render(lang: str = "es"):
+    """Renderiza el análisis de armónicos y filtros.
+    
+    Args:
+        lang: Código de idioma ("es" para español, "en" para inglés).
+    """
+    from data.i18n import t
     _init_state()
 
     st.markdown("## Sistema Eléctrico Industrial - Análisis de Armónicos")

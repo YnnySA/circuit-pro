@@ -22,7 +22,7 @@ import streamlit as st
 _LAYOUT = dict(
     paper_bgcolor="white",
     plot_bgcolor="#f8f9fa",
-    font=dict(color="#333333", family="Segoe UI, sans-serif", size=12),
+    font=dict(color="#333333", family="Consolas, 'Courier New', monospace", size=12),
     margin=dict(l=48, r=24, t=36, b=40),
 )
 _C = {
@@ -564,7 +564,13 @@ def _mostrar_feedback(fb, label):
 # ---------------------------------------------------------------------------
 # RENDER PRINCIPAL
 # ---------------------------------------------------------------------------
-def render():
+def render(lang: str = "es"):
+    """Renderiza el simulador de la Ley de Ohm.
+    
+    Args:
+        lang: Código de idioma ("es" para español, "en" para inglés).
+    """
+    from data.i18n import t
     st.markdown("## Simulador de la Ley de Ohm")
     st.caption(
         "Desarrollado por Dr. Maykop Perez Martinez | "
