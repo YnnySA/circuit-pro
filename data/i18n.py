@@ -77,7 +77,6 @@ TRANSLATIONS = {
             "reconstruir la plataforma."
         ),
         "inicio.tech_section": "Tecnologías y enfoques",
-        # Métricas de las 4 columnas del hero
         "inicio.metric_label_0": "Líneas de negocio integradas",
         "inicio.metric_label_1": "Modelo dual de ingresos",
         "inicio.metric_label_2": "Reducción de tiempo de soporte estimada",
@@ -117,22 +116,132 @@ TRANSLATIONS = {
         # ─────────────────────────────────────────────────────────
         # PÁGINA INDUSTRIA
         # ─────────────────────────────────────────────────────────
-        "industria.tab_rutas": "Rutas de competencia",
-        "industria.tab_caso": "Caso de estudio",
-        "industria.tab_checklist": "Checklist de cumplimiento",
-        "industria.intro": "Formación aplicada para profesionales industriales",
+        "industria.section_eyebrow": "Módulo · Industria",
+        "industria.section_title": "🏭 Capacitación aplicada por competencias",
+        "industria.section_desc": (
+            "Formación aterrizada a escenarios reales de planta: rutas por competencias, casos "
+            "prácticos, simulaciones y checklists de cumplimiento."
+        ),
+        "industria.metric_routes": "Rutas de capacitación activas",
+        "industria.metric_progress": "Avance promedio del equipo",
+        "industria.metric_hours": "Horas de contenido",
+        "industria.metric_compliance": "Cumplimiento de seguridad",
+        "industria.tab_rutas": "🧭 Rutas por competencias",
+        "industria.tab_caso": "🛠️ Caso práctico",
+        "industria.tab_checklist": "✅ Checklist de cumplimiento",
+        "industria.routes_header": "Programas de formación por competencias",
+        "industria.level_label": "Nivel:",
+        "industria.duration_label": "Duración:",
+        "industria.progress_label": "Avance:",
+        "industria.case_radio": "Selecciona la acción correcta:",
+        "industria.case_btn": "Evaluar decisión",
+        "industria.case_no_selection": "Selecciona una opción antes de evaluar.",
+        "industria.case_correct": "Decisión correcta. ",
+        "industria.case_wrong": "Decisión riesgosa. ",
+        "industria.checklist_header": "Checklist de inspección y cumplimiento",
+        "industria.checklist_caption": "Marca cada ítem completado. El progreso se actualiza en tiempo real.",
+        "industria.checklist_progress": "Cumplimiento:",
+        "industria.checklist_ok": "Checklist completo. Equipo apto para operación.",
+        "industria.checklist_mid": "Avance aceptable. Completa los ítems restantes.",
+        "industria.checklist_low": "Cumplimiento insuficiente para autorizar la operación.",
+        "industria.tab_rutas_id": "industria_rutas",
+        "industria.tab_caso": "🛠️ Caso práctico",
+        "industria.tab_checklist": "✅ Checklist de cumplimiento",
 
         # ─────────────────────────────────────────────────────────
         # PÁGINA AGENTES
         # ─────────────────────────────────────────────────────────
-        "agentes.tab_pipeline": "Pipeline RAG",
-        "agentes.tab_beneficios": "Beneficios",
-        "agentes.tab_demo": "Demo: Chat de asistente",
-        "agentes.intro": "Tutores personalizados con IA para empresas",
+        "agentes.section_eyebrow": "Módulo · B2B",
+        "agentes.section_title": "🤖 Agentes tutores personalizados",
+        "agentes.section_desc": (
+            "Desarrollamos asistentes de IA especializados en el conocimiento de cada institución, "
+            "con técnicas RAG y despliegue privado para proteger sus datos."
+        ),
+        "agentes.metric_rag": "Recuperación aumentada",
+        "agentes.metric_onprem": "Despliegue privado",
+        "agentes.metric_support": "Menos carga de soporte",
+        "agentes.metric_availability": "Disponibilidad",
+        "agentes.tab_pipeline": "🔄 Flujo de servicio",
+        "agentes.tab_beneficios": "⭐ Beneficios",
+        "agentes.tab_demo": "💬 Demo del agente",
+        "agentes.tab_casos": "🏢 Casos de uso",
+        "agentes.pipeline_header": "Del conocimiento del cliente a un agente operativo",
+        "agentes.pipeline_caption": "Proceso de implementación en 5 etapas.",
+        "agentes.pipeline_info": (
+            "El flujo es repetible y configurable: incorporar un nuevo cliente no requiere "
+            "reconstruir la plataforma, solo cargar su base de conocimiento."
+        ),
+        "agentes.benefits_header": "Propuesta de valor para instituciones y empresas",
+        "agentes.demo_header": "Demostración: agente especializado con RAG",
+        "agentes.demo_caption": (
+            "Simulación: el agente responde usando los manuales internos del cliente. "
+            "Las respuestas son demostrativas para el pitch."
+        ),
+        "agentes.demo_select": "Base de conocimiento del agente:",
+        "agentes.demo_input": "Escribe una pregunta para el agente:",
+        "agentes.demo_placeholder": "Ej: ¿Cuál es el procedimiento antes de intervenir un tablero energizado?",
+        "agentes.demo_btn": "Consultar al agente",
+        "agentes.demo_source": "Fuente consultada:",
+        "agentes.demo_response": (
+            "Según los procedimientos cargados, antes de intervenir un tablero se debe "
+            "aplicar **bloqueo y etiquetado (LOTO)**, verificar la **ausencia de tensión** "
+            "con instrumento certificado y usar el **EPP** correspondiente. "
+            "\n\n_Esta respuesta se genera recuperando los fragmentos relevantes del "
+            "documento mediante RAG, citando la fuente interna._"
+        ),
+        "agentes.demo_ref": "📎 Referencia: Sección 4.2 — Procedimientos de intervención segura",
+        "agentes.demo_greeting": (
+            "👋 Hola, soy el agente especializado de tu institución. "
+            "Pregúntame sobre los manuales y procedimientos cargados."
+        ),
+        "agentes.cases_header": "Agentes desplegados (ejemplos)",
+        "agentes.cases_col_client": "Cliente",
+        "agentes.cases_col_agent": "Agente",
+        "agentes.cases_col_base": "Base de conocimiento",
 
         # ─────────────────────────────────────────────────────────
         # PÁGINA NEGOCIO
         # ─────────────────────────────────────────────────────────
+        "negocio.section_eyebrow": "Impacto y negocio",
+        "negocio.section_title": "📈 Una visión clara de crecimiento",
+        "negocio.section_desc": (
+            "Modelo de negocio dual (B2C + B2B), mercado objetivo definido y escalabilidad basada "
+            "en agentes inteligentes."
+        ),
+        "negocio.revenue_header": "Proyección de ingresos (MM CLP)",
+        "negocio.revenue_caption": "Escenario base a 4 años, combinando suscripciones B2C y contratos B2B.",
+        "negocio.revenue_year": "Año",
+        "negocio.revenue_b2c": "B2C · Estudiantes",
+        "negocio.revenue_b2b": "B2B · Instituciones",
+        "negocio.revenue_total": "Ingreso proyectado Año 4:",
+        "negocio.revenue_suffix": "MM CLP combinando ambas líneas.",
+        "negocio.market_header": "Mercado objetivo",
+        "negocio.market_caption": "Distribución del mercado direccionable por segmento.",
+        "negocio.market_col_segment": "Segmento",
+        "negocio.market_col_weight": "Peso (%)",
+        "negocio.diff_eyebrow": "Ventaja competitiva",
+        "negocio.diff_title": "Qué nos hace diferentes",
+        "negocio.model_eyebrow": "Modelo y escalabilidad",
+        "negocio.model_title": "Cómo crece CircuitProIA",
+        "negocio.model_b2c_title": "B2C — Suscripción",
+        "negocio.model_b2c_text": (
+            "Estudiantes y profesionales acceden por suscripción mensual a guías, ejercicios "
+            "y tutoría con IA."
+        ),
+        "negocio.model_b2b_title": "B2B — Licencias y servicios",
+        "negocio.model_b2b_text": (
+            "Universidades y empresas contratan agentes personalizados, despliegue privado "
+            "y capacitación a medida."
+        ),
+        "negocio.model_expand_title": "Expansión",
+        "negocio.model_expand_text": (
+            "El mismo motor se replica a nuevos dominios técnicos y países de LATAM por "
+            "configuración, no por reconstrucción."
+        ),
+        "negocio.cta": (
+            "CircuitProIA combina valor educativo inmediato con un motor B2B escalable: un producto en "
+            "etapa temprana con una ruta clara hacia el crecimiento."
+        ),
         "negocio.tab_financiero": "Proyecciones financieras",
         "negocio.tab_mercado": "Análisis de mercado",
         "negocio.tab_diferenciadores": "Diferenciadores",
@@ -284,7 +393,6 @@ TRANSLATIONS = {
             "rebuilding the platform."
         ),
         "inicio.tech_section": "Technologies & Approaches",
-        # Métricas de las 4 columnas del hero
         "inicio.metric_label_0": "Integrated business lines",
         "inicio.metric_label_1": "Dual revenue model",
         "inicio.metric_label_2": "Estimated support time reduction",
@@ -324,22 +432,129 @@ TRANSLATIONS = {
         # ─────────────────────────────────────────────────────────
         # PÁGINA INDUSTRIA
         # ─────────────────────────────────────────────────────────
-        "industria.tab_rutas": "Competency Routes",
-        "industria.tab_caso": "Case Study",
-        "industria.tab_checklist": "Compliance Checklist",
-        "industria.intro": "Applied training for industrial professionals",
+        "industria.section_eyebrow": "Module · Industry",
+        "industria.section_title": "🏭 Applied competency-based training",
+        "industria.section_desc": (
+            "Training grounded in real plant scenarios: competency routes, case studies, "
+            "simulations, and compliance checklists."
+        ),
+        "industria.metric_routes": "Active training routes",
+        "industria.metric_progress": "Average team progress",
+        "industria.metric_hours": "Content hours",
+        "industria.metric_compliance": "Safety compliance",
+        "industria.tab_rutas": "🧭 Competency Routes",
+        "industria.tab_caso": "🛠️ Case Study",
+        "industria.tab_checklist": "✅ Compliance Checklist",
+        "industria.routes_header": "Competency-based training programs",
+        "industria.level_label": "Level:",
+        "industria.duration_label": "Duration:",
+        "industria.progress_label": "Progress:",
+        "industria.case_radio": "Select the correct action:",
+        "industria.case_btn": "Evaluate decision",
+        "industria.case_no_selection": "Please select an option before evaluating.",
+        "industria.case_correct": "Correct decision. ",
+        "industria.case_wrong": "Risky decision. ",
+        "industria.checklist_header": "Inspection and compliance checklist",
+        "industria.checklist_caption": "Check each completed item. Progress updates in real time.",
+        "industria.checklist_progress": "Compliance:",
+        "industria.checklist_ok": "Checklist complete. Equipment cleared for operation.",
+        "industria.checklist_mid": "Acceptable progress. Complete the remaining items.",
+        "industria.checklist_low": "Insufficient compliance to authorize operation.",
 
         # ─────────────────────────────────────────────────────────
         # PÁGINA AGENTES
         # ─────────────────────────────────────────────────────────
-        "agentes.tab_pipeline": "RAG Pipeline",
-        "agentes.tab_beneficios": "Benefits",
-        "agentes.tab_demo": "Demo: Assistant Chat",
-        "agentes.intro": "Personalized AI tutors for enterprises",
+        "agentes.section_eyebrow": "Module · B2B",
+        "agentes.section_title": "🤖 Personalized tutoring agents",
+        "agentes.section_desc": (
+            "We build AI assistants specialized in each institution's knowledge, "
+            "using RAG techniques and private deployment to protect their data."
+        ),
+        "agentes.metric_rag": "Augmented retrieval",
+        "agentes.metric_onprem": "Private deployment",
+        "agentes.metric_support": "Less support load",
+        "agentes.metric_availability": "Availability",
+        "agentes.tab_pipeline": "🔄 Service flow",
+        "agentes.tab_beneficios": "⭐ Benefits",
+        "agentes.tab_demo": "💬 Agent demo",
+        "agentes.tab_casos": "🏢 Use cases",
+        "agentes.pipeline_header": "From client knowledge to an operational agent",
+        "agentes.pipeline_caption": "Implementation process in 5 stages.",
+        "agentes.pipeline_info": (
+            "The flow is repeatable and configurable: onboarding a new client does not require "
+            "rebuilding the platform — just load their knowledge base."
+        ),
+        "agentes.benefits_header": "Value proposition for institutions and enterprises",
+        "agentes.demo_header": "Demo: specialized agent with RAG",
+        "agentes.demo_caption": (
+            "Simulation: the agent responds using the client's internal manuals. "
+            "Responses are demonstrative for the pitch."
+        ),
+        "agentes.demo_select": "Agent knowledge base:",
+        "agentes.demo_input": "Ask the agent a question:",
+        "agentes.demo_placeholder": "E.g.: What is the procedure before intervening an energized panel?",
+        "agentes.demo_btn": "Query the agent",
+        "agentes.demo_source": "Source consulted:",
+        "agentes.demo_response": (
+            "According to the loaded procedures, before intervening a panel you must apply "
+            "**lockout/tagout (LOTO)**, verify **absence of voltage** with a certified instrument, "
+            "and use the corresponding **PPE**. "
+            "\n\n_This response is generated by retrieving relevant fragments from the "
+            "document via RAG, citing the internal source._"
+        ),
+        "agentes.demo_ref": "📎 Reference: Section 4.2 — Safe intervention procedures",
+        "agentes.demo_greeting": (
+            "👋 Hi, I am your institution's specialized agent. "
+            "Ask me about the loaded manuals and procedures."
+        ),
+        "agentes.cases_header": "Deployed agents (examples)",
+        "agentes.cases_col_client": "Client",
+        "agentes.cases_col_agent": "Agent",
+        "agentes.cases_col_base": "Knowledge base",
 
         # ─────────────────────────────────────────────────────────
         # PÁGINA NEGOCIO
         # ─────────────────────────────────────────────────────────
+        "negocio.section_eyebrow": "Impact & Business",
+        "negocio.section_title": "📈 A clear vision of growth",
+        "negocio.section_desc": (
+            "Dual business model (B2C + B2B), defined target market, and scalability based "
+            "on intelligent agents."
+        ),
+        "negocio.revenue_header": "Revenue projection (MM CLP)",
+        "negocio.revenue_caption": "Base scenario over 4 years, combining B2C subscriptions and B2B contracts.",
+        "negocio.revenue_year": "Year",
+        "negocio.revenue_b2c": "B2C · Students",
+        "negocio.revenue_b2b": "B2B · Institutions",
+        "negocio.revenue_total": "Projected revenue Year 4:",
+        "negocio.revenue_suffix": "MM CLP combining both lines.",
+        "negocio.market_header": "Target market",
+        "negocio.market_caption": "Distribution of addressable market by segment.",
+        "negocio.market_col_segment": "Segment",
+        "negocio.market_col_weight": "Weight (%)",
+        "negocio.diff_eyebrow": "Competitive advantage",
+        "negocio.diff_title": "What makes us different",
+        "negocio.model_eyebrow": "Model & scalability",
+        "negocio.model_title": "How CircuitProIA grows",
+        "negocio.model_b2c_title": "B2C — Subscription",
+        "negocio.model_b2c_text": (
+            "Students and professionals access monthly subscriptions to guides, exercises, "
+            "and AI tutoring."
+        ),
+        "negocio.model_b2b_title": "B2B — Licenses & services",
+        "negocio.model_b2b_text": (
+            "Universities and companies hire personalized agents, private deployment, "
+            "and tailored training."
+        ),
+        "negocio.model_expand_title": "Expansion",
+        "negocio.model_expand_text": (
+            "The same engine replicates to new technical domains and LATAM countries by "
+            "configuration, not reconstruction."
+        ),
+        "negocio.cta": (
+            "CircuitProIA combines immediate educational value with a scalable B2B engine: an early-stage "
+            "product with a clear path to growth."
+        ),
         "negocio.tab_financiero": "Financial Projections",
         "negocio.tab_mercado": "Market Analysis",
         "negocio.tab_diferenciadores": "Differentiators",
