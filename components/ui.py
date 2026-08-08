@@ -75,13 +75,14 @@ def sidebar_brand(lang: str = "es"):
     """Marca y navegación contextual en la barra lateral."""
     from data.i18n import t
     logo = _logo_b64()
+    tagline = t("sidebar.tagline", lang)
     st.sidebar.markdown(
         f"""
         <div style='display:flex; align-items:flex-start; gap:0.5rem; padding:0.4rem 0 0.8rem 0;'>
             <img src='data:image/png;base64,{logo}' style='width:32px; height:32px; object-fit:contain;'/>
             <div>
                 <span style='font-size:1.5rem; font-weight:800; color:{COLORS['primary']};'>CircuitProAI</span><br/>
-                <span style='font-size:0.78rem; color:{COLORS['muted']};'>{t('sidebar.tagline', lang)}</span>
+                <span style='font-size:0.78rem; color:{COLORS['muted']};'>{tagline}</span>
             </div>
         </div>
         """,
