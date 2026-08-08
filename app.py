@@ -58,7 +58,7 @@ with col2:
         st.rerun()
 
 # ─────────────────────────────────────────────────────────
-# Navegación traduccida
+# Navegación traducida
 # ─────────────────────────────────────────────────────────
 lang = get_language()
 
@@ -68,7 +68,7 @@ industria   = st.Page("pages/2_Industria.py",   title=t("nav.industria", lang), 
 agentes     = st.Page("pages/3_Agentes.py",     title=t("nav.agentes", lang),       icon="🤖")
 negocio     = st.Page("pages/4_Negocio.py",     title=t("nav.negocio", lang),       icon="📈")
 
-sidebar_brand()
+sidebar_brand(lang)
 
 pg = st.navigation({
     t("sidebar.platform", lang):              [inicio],

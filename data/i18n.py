@@ -14,6 +14,7 @@ TRANSLATIONS = {
         "sidebar.specialized": "Asistencia Especializada",
         "sidebar.prototype": "Prototipo de demostración · v0.1",
         "sidebar.copyright": "© 2026 CircuitProAI",
+        "sidebar.tagline": "IA aplicada a educación e industria",
 
         # ─────────────────────────────────────────────────────────
         # NAVEGACIÓN
@@ -76,6 +77,11 @@ TRANSLATIONS = {
             "reconstruir la plataforma."
         ),
         "inicio.tech_section": "Tecnologías y enfoques",
+        # Métricas de las 4 columnas del hero
+        "inicio.metric_label_0": "Líneas de negocio integradas",
+        "inicio.metric_label_1": "Modelo dual de ingresos",
+        "inicio.metric_label_2": "Reducción de tiempo de soporte estimada",
+        "inicio.metric_label_3": "Disponibilidad de tutoría",
 
         # ─────────────────────────────────────────────────────────
         # PÁGINA ESTUDIANTES
@@ -215,6 +221,7 @@ TRANSLATIONS = {
         "sidebar.specialized": "Specialized Assistance",
         "sidebar.prototype": "Demo prototype · v0.1",
         "sidebar.copyright": "© 2026 CircuitProAI",
+        "sidebar.tagline": "AI for Education & Industry",
 
         # ─────────────────────────────────────────────────────────
         # NAVEGACIÓN
@@ -277,6 +284,11 @@ TRANSLATIONS = {
             "rebuilding the platform."
         ),
         "inicio.tech_section": "Technologies & Approaches",
+        # Métricas de las 4 columnas del hero
+        "inicio.metric_label_0": "Integrated business lines",
+        "inicio.metric_label_1": "Dual revenue model",
+        "inicio.metric_label_2": "Estimated support time reduction",
+        "inicio.metric_label_3": "Tutoring availability",
 
         # ─────────────────────────────────────────────────────────
         # PÁGINA ESTUDIANTES
@@ -412,11 +424,11 @@ TRANSLATIONS = {
 def t(key: str, lang: str = "es") -> str:
     """
     Obtiene la traducción de una clave.
-    
+
     Args:
         key: Clave de traducción (ej: "nav.inicio")
         lang: Código de idioma ("es" o "en"). Por defecto "es".
-    
+
     Returns:
         Texto traducido, o la clave si no existe.
     """

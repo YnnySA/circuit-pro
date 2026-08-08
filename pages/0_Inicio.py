@@ -20,9 +20,18 @@ hero(
 
 st.write("")
 
-# --- Métricas de cabecera ----------------------------------------------
+# --- Métricas de cabecera (4 columnas) ----------------------------------
+# Los valores numéricos vienen de mock_data; los labels se traducen via i18n
+METRIC_LABELS = [
+    t("inicio.metric_label_0", lang),
+    t("inicio.metric_label_1", lang),
+    t("inicio.metric_label_2", lang),
+    t("inicio.metric_label_3", lang),
+]
+METRIC_VALUES = [item[0] for item in BUSINESS_METRICS]
+
 cols = st.columns(4)
-for col, (num, label) in zip(cols, BUSINESS_METRICS):
+for col, num, label in zip(cols, METRIC_VALUES, METRIC_LABELS):
     with col:
         metric_card(num, label)
 

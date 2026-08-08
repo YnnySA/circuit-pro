@@ -70,9 +70,10 @@ def _logo_b64():
     """Lee el logo y lo devuelve como base64 para incrustarlo en HTML."""
     with open("assets/icon_192.png", "rb") as f:
         return base64.b64encode(f.read()).decode()
-    
-def sidebar_brand():
+
+def sidebar_brand(lang: str = "es"):
     """Marca y navegación contextual en la barra lateral."""
+    from data.i18n import t
     logo = _logo_b64()
     st.sidebar.markdown(
         f"""
@@ -80,7 +81,7 @@ def sidebar_brand():
             <img src='data:image/png;base64,{logo}' style='width:32px; height:32px; object-fit:contain;'/>
             <div>
                 <span style='font-size:1.5rem; font-weight:800; color:{COLORS['primary']};'>CircuitProAI</span><br/>
-                <span style='font-size:0.78rem; color:{COLORS['muted']};'>IA aplicada a educación e industria</span>
+                <span style='font-size:0.78rem; color:{COLORS['muted']};'>{t('sidebar.tagline', lang)}</span>
             </div>
         </div>
         """,
