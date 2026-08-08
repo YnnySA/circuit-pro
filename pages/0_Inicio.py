@@ -20,9 +20,16 @@ hero(
 
 st.write("")
 
-# --- Métricas de cabecera ----------------------------------------------
+# --- Métricas de cabecera: valores de mock_data, labels de i18n --------
+METRIC_LABELS = [
+    t("inicio.metric_label_0", lang),
+    t("inicio.metric_label_1", lang),
+    t("inicio.metric_label_2", lang),
+    t("inicio.metric_label_3", lang),
+]
+METRIC_VALUES = [item[0] for item in BUSINESS_METRICS]
 cols = st.columns(4)
-for col, (num, label) in zip(cols, BUSINESS_METRICS):
+for col, num, label in zip(cols, METRIC_VALUES, METRIC_LABELS):
     with col:
         metric_card(num, label)
 
@@ -100,7 +107,6 @@ tech_items = [
     ("Analítica de aprendizaje", "Learning Analytics"),
     ("Gamificación", "Gamification"),
 ]
-# Mostrar items en el idioma correcto
 if lang == "es":
     tech_display = [item[0] for item in tech_items]
 else:
