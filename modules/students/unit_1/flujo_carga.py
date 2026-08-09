@@ -75,13 +75,13 @@ def _fig_circuito(r, R, X, Qcap):
     fig = go.Figure()
 
     # Coordenadas principales
-    N2x  = 2.0    # x barra Nodo 2
-    N1x  = 9.0    # x barra Nodo 1
-    Cy   = 4.0    # y cable horizontal
-    ht   = 1.8    # semialtura barras
-    Zmx  = (N2x + N1x) / 2   # centro caja Z = 5.5
-    Zw   = 1.5    # semiancho caja Z
-    Zh   = 0.82   # semialto  caja Z
+    N2x  = 2.0
+    N1x  = 9.0
+    Cy   = 4.0
+    ht   = 1.8
+    Zmx  = (N2x + N1x) / 2
+    Zw   = 1.5
+    Zh   = 0.82
 
     def ln(x0, y0, x1, y1, color="#555", width=2):
         fig.add_shape(type="line", x0=x0, y0=y0, x1=x1, y1=y1,
@@ -95,24 +95,18 @@ def _fig_circuito(r, R, X, Qcap):
                            bgcolor="rgba(0,0,0,0)")
 
     def tierra(cx, cy_top):
-        """Dibuja símbolo de tierra colgando desde (cx, cy_top) hacia abajo."""
         ln(cx, cy_top, cx, cy_top - 0.28, "#555", 2)
         for w, dy in [(0.44, 0.0), (0.30, 0.16), (0.16, 0.32)]:
             ln(cx - w/2, cy_top - 0.28 - dy,
                cx + w/2, cy_top - 0.28 - dy, "#555", 2)
 
-    # ─ Cable horizontal
     ln(N2x, Cy, N1x, Cy, "#1f77b4", 3)
-
-    # ─ Barras verticales
     ln(N2x, Cy - ht, N2x, Cy + ht, "#ff7f0e", 6)
     ln(N1x, Cy - ht, N1x, Cy + ht, "#d62728", 6)
 
-    # ─ Títulos nodos
     ann(N2x, Cy + ht + 0.45, "<b>Nodo 2</b>", "#ff7f0e", 11)
     ann(N1x, Cy + ht + 0.45, "<b>Nodo 1</b>", "#d62728", 11)
 
-    # ─ Generador (círculo con ~)
     th = np.linspace(0, 2 * np.pi, 60)
     Gx, Gy, Gr = N2x - 1.5, Cy, 0.52
     fig.add_trace(go.Scatter(
@@ -124,23 +118,19 @@ def _fig_circuito(r, R, X, Qcap):
     ann(Gx, Gy, "<b>~</b>", "#ff7f0e", 19)
     ln(Gx + Gr, Gy, N2x, Cy, "#ff7f0e", 2)
 
-    # ─ Tierra Nodo 2
     tierra(N2x, Cy - ht)
     ann(N2x, Cy - ht - 0.82,  "V₂ =", "#888", 8)
     ann(N2x, Cy - ht - 1.15, f"<b>{_pol(V2, 2)}</b>", "#ff7f0e", 10)
 
-    # ─ Caja Z_línea (centrada en el cable)
     fig.add_shape(type="rect",
                   x0=Zmx - Zw, y0=Cy - Zh, x1=Zmx + Zw, y1=Cy + Zh,
                   fillcolor="#eaf4fb", line=dict(color="#1f77b4", width=2))
     ann(Zmx, Cy + 0.34, "Z<sub>línea</sub> = R + jX", "#1f77b4", 9)
     sgn = "+" if X >= 0 else "−"
     ann(Zmx, Cy - 0.16, f"<b>{R:.2f} {sgn} j{abs(X):.2f} pu</b>", "#1a1a1a", 11)
-    # ΔV debajo de la caja
     ann(Zmx, Cy - Zh - 0.30, "ΔV<sub>línea</sub> = I · Z", "#555", 8)
     ann(Zmx, Cy - Zh - 0.60, f"{_pol(dV)}", "#2ca02c", 9)
 
-    # ─ Flecha corriente I (SOLO entre Nodo2 y la caja Z, tramo izquierdo)
     Iax = N2x + 0.25
     Ix  = Zmx - Zw - 0.15
     fig.add_annotation(
@@ -153,13 +143,11 @@ def _fig_circuito(r, R, X, Qcap):
         xanchor="center", yanchor="bottom", yshift=3,
     )
 
-    # ─ Flujos S₂ (antes de la caja) y S₂₁ (después de la caja)
-    Sm_iz = (N2x + Zmx - Zw) / 2         # punto medio tramo izquierdo
-    Sm_de = (Zmx + Zw + N1x) / 2         # punto medio tramo derecho
+    Sm_iz = (N2x + Zmx - Zw) / 2
+    Sm_de = (Zmx + Zw + N1x) / 2
     s2s   = "+" if Sf.imag >= 0 else "−"
     s21s  = "+" if St.imag >= 0 else "−"
 
-    # flecha S2
     fig.add_annotation(
         ax=N2x + 0.1, ay=Cy - 0.18,
         x=Zmx - Zw - 0.1, y=Cy - 0.18,
@@ -169,7 +157,6 @@ def _fig_circuito(r, R, X, Qcap):
     ann(Sm_iz, Cy + 0.06, "S₂ =", "#666", 8)
     ann(Sm_iz, Cy - 0.28, f"{Sf.real:.3f} {s2s} j{abs(Sf.imag):.3f} pu", "#333", 8)
 
-    # flecha S21
     fig.add_annotation(
         ax=Zmx + Zw + 0.1, ay=Cy - 0.18,
         x=N1x - 0.1, y=Cy - 0.18,
@@ -179,33 +166,22 @@ def _fig_circuito(r, R, X, Qcap):
     ann(Sm_de, Cy + 0.06, "S₂₁ =", "#666", 8)
     ann(Sm_de, Cy - 0.28, f"{St.real:.3f} {s21s} j{abs(St.imag):.3f} pu", "#333", 8)
 
-    # ─ Capacitor Qc: montado sobre el Nodo 1, arriba del cable
-    # Estructura: cable vertical desde barra Nodo1 hacia arriba,
-    # luego dos placas verticales paralelas (barras horizontales cortas),
-    # luego cable hacia la derecha con tierra al final.
-    Cap_y0  = Cy + ht          # donde sale el cable del capacitor desde la barra
-    Cap_yL  = Cap_y0 + 0.55    # y inferior de las placas
-    Cap_yH  = Cap_yL + 0.35    # y superior de las placas
-    Cap_mid = Cap_yL + 0.175   # centro entre placas (para tierra/cable)
-    Cap_x1  = N1x + 0.0        # x de la placa izquierda (sobre la barra N1)
-    Cap_x2  = N1x + 0.40       # x de la placa derecha
-    Cap_xT  = N1x + 1.0        # x de la tierra del capacitor
+    Cap_y0  = Cy + ht
+    Cap_yL  = Cap_y0 + 0.55
+    Cap_yH  = Cap_yL + 0.35
+    Cap_mid = Cap_yL + 0.175
+    Cap_x1  = N1x + 0.0
+    Cap_x2  = N1x + 0.40
+    Cap_xT  = N1x + 1.0
 
-    # cable vertical desde barra hasta las placas
     ln(N1x, Cap_y0, N1x, Cap_yL, "#17becf", 2)
-    # placa izquierda (barra vertical corta)
     ln(Cap_x1, Cap_yL, Cap_x1, Cap_yH, "#17becf", 4)
-    # placa derecha
     ln(Cap_x2, Cap_yL, Cap_x2, Cap_yH, "#17becf", 4)
-    # cable horizontal entre placa derecha y tierra
     ln(Cap_x2, Cap_mid, Cap_xT, Cap_mid, "#17becf", 2)
-    # tierra del capacitor (a la derecha)
     tierra(Cap_xT, Cap_mid)
-    # label Qc encima de las placas
     ann((Cap_x1 + Cap_xT) / 2, Cap_yH + 0.32,
         f"Q<sub>C</sub> = {Qcap:.2f} pu", "#17becf", 9)
 
-    # ─ Carga P+jQ (a la derecha de la barra Nodo1)
     Lx0 = N1x + 0.15
     Lx1 = N1x + 1.65
     Ly0 = Cy - 0.62
@@ -220,10 +196,8 @@ def _fig_circuito(r, R, X, Qcap):
     s1s = "+" if S1d.imag >= 0 else "−"
     ann((Lx0 + Lx1) / 2, (Ly0 + Ly1) / 2 - 0.13,
         f"<b>{S1d.real:.2f} {s1s} j{abs(S1d.imag):.2f} pu</b>", "#1a1a1a", 9)
-    # Tierra propia de la carga (abajo-derecha de la caja)
     tierra(Lx1, Ly0)
 
-    # ─ Tierra Nodo 1
     tierra(N1x, Cy - ht)
     ann(N1x, Cy - ht - 0.82,  "V₁ =", "#888", 8)
     ann(N1x, Cy - ht - 1.15, f"<b>{_pol(V1, 4)}</b>", "#d62728", 10)
@@ -243,10 +217,9 @@ def _fig_circuito(r, R, X, Qcap):
 
 
 # ── DIAGRAMA FASORIAL ─────────────────────────────────────────────────────────
-def _fig_fasorial(r):
-    """Triángulo fasorial: O→V₁ + ΔV(V₁→V₂) = O→V₂
-    con vector I escalado por visibilidad.
-    """
+def _fig_fasorial(r, lang: str = "es"):
+    """Triángulo fasorial: O→V₁ + ΔV(V₁→V₂) = O→V₂"""
+    from data.i18n import t
     V1 = r["V1"]; V2 = r["V2"]; I = r["I"]
     scale = max(abs(V1), abs(V2)) * 0.6 / (abs(I) + 1e-9)
     Ip = I * scale
@@ -274,7 +247,6 @@ def _fig_fasorial(r):
 
     vec(0, 0, V2.real, V2.imag, "#e07b7b", "V₂")
     vec(0, 0, V1.real, V1.imag, "#d62728", "V₁")
-    # ΔV = Z·I = V2 − V1 : de punta de V1 a punta de V2
     vec(V1.real, V1.imag, V2.real, V2.imag, "#17becf", "ΔV = Z·I")
     vec(0, 0, Ip.real, Ip.imag, "#1f77b4", "I")
 
@@ -297,38 +269,39 @@ def _fig_fasorial(r):
                     font=dict(size=11)),
         margin=dict(l=50, r=20, t=35, b=60),
         height=360,
-        title=dict(text="Diagrama Fasorial — Tensiones y Corriente",
+        title=dict(text=t("fc.phasor_title", lang),
                    font=dict(size=13), x=0.5),
     )
     return fig
 
 
 # ── TABLA DE RESULTADOS ────────────────────────────────────────────────────────
-def _tabla_resultados(r):
+def _tabla_resultados(r, lang: str = "es"):
+    from data.i18n import t
     V1 = r["V1"]; V2 = r["V2"]; I = r["I"]
     S21 = r["S21"]; Sl = r["Sloss"]; dV = r["dV"]
     eta = S21.real / (S21.real + Sl.real + 1e-12) * 100
     filas = [
-        ("Tensión Bus 1",       "V₁ = V₂ + Z·I",   _pol(V1),               _rect(V1)),
-        ("Corriente de línea",  "I = (V₂−V₁) / Z", _pol(I),                _rect(I)),
-        ("Pot. Activa P₂₁",     "Re(V₂ · I*)",      f"{S21.real:.5f} pu",   "—"),
-        ("Pot. Reactiva Q₂₁",   "Im(V₂ · I*)",      f"{S21.imag:.5f} pu",   "—"),
-        ("Pot. Aparente S₂₁",   "V₂ · I*",           _pol(S21),              _rect(S21)),
-        ("Caída de tensión ΔV", "Z · I",             _pol(dV),               _rect(dV)),
-        ("Pérdidas activas",     "|I|² · R",          f"{Sl.real:.6f} pu",    f"|I|²={abs(I)**2:.5f}"),
-        ("Pérdidas reactivas",   "|I|² · X",          f"{Sl.imag:.6f} pu",    f"η={eta:.2f}%"),
+        (t("fc.table_v1", lang),      "V₁ = V₂ + Z·I",   _pol(V1),              _rect(V1)),
+        (t("fc.table_current", lang), "I = (V₂−V₁) / Z", _pol(I),               _rect(I)),
+        (t("fc.table_p21", lang),     "Re(V₂ · I*)",      f"{S21.real:.5f} pu",  "—"),
+        (t("fc.table_q21", lang),     "Im(V₂ · I*)",      f"{S21.imag:.5f} pu",  "—"),
+        (t("fc.table_s21", lang),     "V₂ · I*",           _pol(S21),             _rect(S21)),
+        (t("fc.table_dv", lang),      "Z · I",             _pol(dV),              _rect(dV)),
+        (t("fc.table_ploss", lang),   "|I|² · R",          f"{Sl.real:.6f} pu",   f"|I|²={abs(I)**2:.5f}"),
+        (t("fc.table_qloss", lang),   "|I|² · X",          f"{Sl.imag:.6f} pu",   f"η={eta:.2f}%"),
     ]
-    df = pd.DataFrame(filas, columns=["Variable", "Expresión", "Polar / Valor", "Rectangular"])
+    df = pd.DataFrame(filas, columns=[
+        t("fc.table_col_variable", lang),
+        t("fc.table_col_expression", lang),
+        t("fc.table_col_polar", lang),
+        t("fc.table_col_rect", lang),
+    ])
     st.dataframe(df, use_container_width=True, hide_index=True)
 
 
 # ── RENDER PRINCIPAL ───────────────────────────────────────────────────────────
 def render(lang: str = "es"):
-    """Renderiza el análisis de flujo de carga.
-    
-    Args:
-        lang: Código de idioma ("es" para español, "en" para inglés).
-    """
     from data.i18n import t
     st.title(t("fc.title", lang))
     st.caption(
@@ -354,14 +327,14 @@ def render(lang: str = "es"):
         R = st.slider(t("fc.resistance", lang), 0.00, 0.50,
                       float(st.session_state.get("fc_R", 0.20)), 0.01,
                       key="fc_R", format="%.2f")
-        X = st.slider("X — Reactancia [pu]", 0.00, 1.00,
+        X = st.slider(t("fc.reactance", lang), 0.00, 1.00,
                       float(st.session_state.get("fc_X", 0.74)), 0.01,
                       key="fc_X", format="%.2f")
         st.markdown(t("fc.load_bus", lang))
         Pload = st.slider(t("fc.active_power", lang), 0.00, 2.00,
                           float(st.session_state.get("fc_P", 1.35)), 0.01,
                           key="fc_P", format="%.2f")
-        Qload = st.slider("Qₗ — Potencia reactiva [pu]", -1.00, 2.00,
+        Qload = st.slider(t("fc.reactive_power", lang), -1.00, 2.00,
                           float(st.session_state.get("fc_Q", 1.00)), 0.01,
                           key="fc_Q", format="%.2f")
         Qcap  = st.slider(t("fc.capacitor_bank", lang), 0.00, 2.00,
@@ -377,11 +350,11 @@ def render(lang: str = "es"):
         st.divider()
         st.markdown(t("fc.presets", lang))
         presets = {
-            t("fc.preset_resistive", lang):   (0.00, 0.50, 0.50,  1.00, 1.00, 1.00,  0.0),
-            t("fc.preset_inductive", lang):   (0.05, 0.30, 0.80,  0.60, 0.00, 0.95,  0.0),
-            t("fc.preset_reference", lang):   (0.20, 0.74, 1.35,  1.00, 1.00, 0.98,  0.0),
-            t("fc.preset_high_load", lang):   (0.10, 0.60, 1.20,  0.90, 0.80, 0.90, -5.0),
-            t("fc.preset_capacitive", lang):  (0.02, 0.40, 0.40, -0.30, 0.50, 1.00,  0.0),
+            t("fc.preset_resistive", lang):  (0.00, 0.50, 0.50,  1.00, 1.00, 1.00,  0.0),
+            t("fc.preset_inductive", lang):  (0.05, 0.30, 0.80,  0.60, 0.00, 0.95,  0.0),
+            t("fc.preset_reference", lang):  (0.20, 0.74, 1.35,  1.00, 1.00, 0.98,  0.0),
+            t("fc.preset_high_load", lang):  (0.10, 0.60, 1.20,  0.90, 0.80, 0.90, -5.0),
+            t("fc.preset_capacitive", lang): (0.02, 0.40, 0.40, -0.30, 0.50, 1.00,  0.0),
         }
         keys = ["R", "X", "P", "Q", "Qc", "V", "A"]
         c1, c2 = st.columns(2)
@@ -395,28 +368,28 @@ def render(lang: str = "es"):
     r = _solve(R, X, Pload, Qload, Qcap, V2mag, V2ang)
 
     with col_diag:
-        st.subheader("🔌 Diagrama del Circuito")
+        st.subheader(t("fc.circuit_diagram", lang))
         st.plotly_chart(_fig_circuito(r, R, X, Qcap),
                         use_container_width=True, key="fc_circ")
-        st.subheader("📐 Diagrama Fasorial")
-        st.plotly_chart(_fig_fasorial(r),
+        st.subheader(t("fc.phasor_diagram", lang))
+        st.plotly_chart(_fig_fasorial(r, lang),
                         use_container_width=True, key="fc_fas")
 
     st.divider()
     st.subheader(t("fc.results", lang))
-    badge = "✅ Convergió" if r["ok"] else "❌ No convergió"
-    st.caption(f"Gauss-Seidel \u00a0{badge} — {r['iters']} iteraciones \u00a0|  ε < 1×10⁻¹⁰")
-    _tabla_resultados(r)
+    badge = t("fc.converged", lang) if r["ok"] else t("fc.not_converged", lang)
+    st.caption(f"Gauss-Seidel \u00a0{badge} — {r['iters']} {t('fc.iterations', lang)} \u00a0|  ε < 1×10⁻¹⁰")
+    _tabla_resultados(r, lang)
 
     st.divider()
-    st.subheader("📐 Relaciones Fundamentales")
+    st.subheader(t("fc.fundamental_relations", lang))
     rels = [
-        ("TENSIÓN DE ENVÍO",     "V₁ = V₂ + Z · I"),
-        ("POTENCIA RECIBIDA",    "S₂₁ = V₂ · I* = P₂₁ + jQ₂₁"),
-        ("CORRIENTE DE LÍNEA",   "I = S₂₁* / V₂* = (V₂−V₁) / Z"),
-        ("PÉRDIDAS EN LA LÍNEA", "Sloss = |I|² · Z = Ploss + jQloss"),
-        ("ADMITANCIA DE LÍNEA",  "Y = 1/Z = G + jB"),
-        ("BALANCE DE POTENCIA",  "Sgen = Scarga + Sloss"),
+        (t("fc.rel_sending", lang),    "V₁ = V₂ + Z · I"),
+        (t("fc.rel_received", lang),   "S₂₁ = V₂ · I* = P₂₁ + jQ₂₁"),
+        (t("fc.rel_current", lang),    "I = S₂₁* / V₂* = (V₂−V₁) / Z"),
+        (t("fc.rel_losses", lang),     "Sloss = |I|² · Z = Ploss + jQloss"),
+        (t("fc.rel_admittance", lang), "Y = 1/Z = G + jB"),
+        (t("fc.rel_balance", lang),    "Sgen = Scarga + Sloss"),
     ]
     cols = st.columns(3)
     for i, (name, eq) in enumerate(rels):
