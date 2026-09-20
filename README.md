@@ -211,6 +211,3 @@ Ver [requirements.txt](requirements.txt) para versiones completas.
 
 Desarrollado como tesis doctoral (7th Challenge - Doctorado)
 
-## 📞 Contacto
-
-[Agregar información de contacto si aplica]
